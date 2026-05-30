@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Berlin 2026 — ACGA</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d26;
+      --border:  #2a2d3a;
+      --gold:    #f5d020;
+      --gold-dk: #c4a800;
+      --text:    #e8eaf0;
+      --muted:   #8b8fa8;
+      --green:   #22c55e;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      height: 52px;
+      background: rgba(15,17,23,.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1.5rem;
+    }
+    .nav-brand { font-weight: 700; font-size: 1rem; color: var(--gold); text-decoration: none; }
+    .nav-links { display: flex; gap: .25rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none;
+      padding: .4rem .75rem; border-radius: 6px; font-size: .875rem;
+      transition: color .15s, background .15s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--surface); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 5rem 1.5rem 4rem;
+      text-align: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, #1c2040 0%, var(--bg) 80%);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-tag {
+      display: inline-block;
+      border: 1px solid var(--border);
+      color: var(--gold);
+      font-size: .75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: .1em;
+      padding: .3rem .9rem; border-radius: 999px;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 8vw, 5rem);
+      font-weight: 800; letter-spacing: -.02em; line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+    .hero h1 em { color: var(--gold); font-style: normal; }
+    .hero-sub { color: var(--muted); font-size: 1.05rem; }
+    .hero-pills {
+      display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem;
+      margin-top: 2rem; font-size: .9rem;
+    }
+    .hero-pill span { color: var(--muted); }
+    .hero-pill strong { color: var(--text); }
+
+    /* ── LAYOUT ── */
+    .section {
+      max-width: 960px; margin: 0 auto;
+      padding: 3rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+      font-size: 1.35rem; font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── INFO CARDS ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: .875rem;
+    }
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.125rem;
+    }
+    .info-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .3rem; }
+    .info-value { font-size: .9rem; font-weight: 500; }
+    .info-value a { color: var(--gold); text-decoration: none; }
+    .info-value a:hover { text-decoration: underline; }
+
+    /* ── TRACKER ── */
+    #tracker-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    #train-map { height: 340px; width: 100%; }
+
+    .progress-wrap { padding: .75rem 1.25rem; border-top: 1px solid var(--border); }
+    .progress-bar { background: var(--border); border-radius: 999px; height: 5px; overflow: hidden; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dk), var(--gold));
+      border-radius: 999px; transition: width 1s linear;
+    }
+    .progress-labels {
+      display: flex; justify-content: space-between;
+      font-size: .72rem; color: var(--muted); margin-top: .35rem;
+    }
+
+    .tracker-status {
+      padding: .875rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: .75rem;
+      border-top: 1px solid var(--border);
+    }
+    .status-left { display: flex; align-items: center; gap: .625rem; }
+    .live-dot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.25);
+      animation: blink 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes blink {
+      0%,100% { box-shadow: 0 0 0 3px rgba(34,197,94,.25); }
+      50%      { box-shadow: 0 0 0 6px rgba(34,197,94,.08); }
+    }
+    .status-label { font-size: .78rem; color: var(--muted); }
+    .status-val   { font-size: .95rem; font-weight: 600; }
+
+    /* stop list */
+    .stop-list { padding: 0 1.25rem 1.25rem; }
+    .stop-item {
+      display: flex; align-items: center; gap: .875rem;
+      padding: .45rem 0; position: relative;
+    }
+    .stop-item:not(:last-child)::after {
+      content: ''; position: absolute;
+      left: 12px; top: 28px; bottom: -4px;
+      width: 2px; background: var(--border); z-index: 0;
+    }
+    .stop-item.passed::after   { background: var(--gold-dk); }
+    .stop-item.current::after  { background: linear-gradient(var(--gold), var(--border)); }
+
+    .stop-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--border); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: .68rem; font-weight: 700; z-index: 1;
+    }
+    .stop-item.passed .stop-dot  { background: var(--gold-dk); border-color: var(--gold-dk); color: #000; }
+    .stop-item.current .stop-dot { background: var(--gold); border-color: var(--gold); color: #000; box-shadow: 0 0 0 4px rgba(245,208,32,.2); }
+
+    .stop-name { font-size: .875rem; font-weight: 500; flex: 1; }
+    .stop-item.passed .stop-name { color: var(--muted); }
+    .stop-time { font-size: .78rem; color: var(--muted); white-space: nowrap; }
+
+    /* train service chips */
+    .train-services {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
+    }
+    .train-service-chip {
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); font-size: .75rem; font-weight: 500;
+      padding: .25rem .7rem; border-radius: 999px;
+    }
+
+    /* countdown / inactive */
+    .tracker-inactive {
+      text-align: center; padding: 3rem 2rem; color: var(--muted);
+    }
+    .countdown-big {
+      font-size: 2.25rem; font-weight: 700; color: var(--text);
+      margin: .5rem 0;
+    }
+
+    /* ── PROGRAM ── */
+    .days { display: flex; flex-direction: column; gap: 1.25rem; }
+    .day-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+    .day-header {
+      background: var(--border);
+      padding: .8rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .day-title { font-weight: 700; font-size: .95rem; }
+    .day-date  { font-size: .8rem; color: var(--muted); }
+    .day-events { padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: .625rem; }
+    .event { display: flex; gap: .875rem; align-items: flex-start; }
+    .event-time {
+      font-size: .78rem; font-weight: 700; color: var(--gold);
+      min-width: 44px; padding-top: .125rem; flex-shrink: 0;
+    }
+    .event-desc { font-size: .875rem; }
+    .event-note { font-size: .78rem; color: var(--muted); margin-top: .1rem; }
+
+    /* ── HOTEL ── */
+    .hotel-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .hotel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+    .bar-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: var(--gold); color: #000;
+      font-weight: 700; font-size: .875rem;
+      padding: .6rem 1.25rem; border-radius: 8px;
+      text-decoration: none; margin-top: .875rem;
+      transition: background .15s;
+    }
+    .bar-link:hover { background: var(--gold-dk); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem;
+      color: var(--muted); font-size: .8rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 620px) {
+      .nav-links { display: none; }
+      .hotel-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">Berlin 2026</a>
+  <ul class="nav-links">
+    <li><a href="#info">Informace</a></li>
+    <li><a href="#vlak">Vlak</a></li>
+    <li><a href="#program">Program</a></li>
+    <li><a href="#hotel">Hotel</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-tag">ACGA skolni vylet</div>
+  <h1>Skolni vylet<br><em>Berlin 2026</em></h1>
+  <p class="hero-sub">Kulturne-jazykovy vylet do nemeckeho hlavniho mesta</p>
+  <div class="hero-pills">
+    <div class="hero-pill"><span>Termin </span><strong>31. 5. – 2. 6. 2026</strong></div>
+    <div class="hero-pill"><span>Hotel </span><strong>A&amp;O Berlin Hbf</strong></div>
+    <div class="hero-pill"><span>Doprava </span><strong>Vlak Praha ↔ Berlin</strong></div>
+    <div class="hero-pill"><span>Cena </span><strong>6 900 Kc / ucastnik</strong></div>
+  </div>
+</header>
+
+<!-- INFORMACE -->
+<section class="section" id="info">
+  <h2 class="section-title">Informace</h2>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-label">Misto</div>
+      <div class="info-value">Berlin, Nemecko</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Termin</div>
+      <div class="info-value">31. 5. – 2. 6. 2026</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Doprava</div>
+      <div class="info-value">Vlak, Praha hl.n. ↔ Berlin Hbf</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Ubytovani</div>
+      <div class="info-value">A&amp;O Hotel – Berlin Hauptbahnhof<br>nocleharna s vlastnim soc. zarizenim</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Stravovani</div>
+      <div class="info-value">Polopenze (snidane v hotelu, vecere v restauracich)</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Doprovod</div>
+      <div class="info-value">Martin Simek, Matyas Suk, zdravotnice</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Cena zahrnuje</div>
+      <div class="info-value">Doprava s mistenkami, ubytovani (lozni pradlo, mestska taxa), strava, pruvodce, prevoz batohu, vstupy</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Kontakt</div>
+      <div class="info-value"><a href="mailto:martin.simek@acga.cz">martin.simek@acga.cz</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- VLAK -->
+<section class="section" id="vlak">
+  <h2 class="section-title">Vlakovy tracker</h2>
+
+  <div class="train-services">
+    <div class="train-service-chip">WiFi</div>
+    <div class="train-service-chip">230V zasuvky</div>
+    <div class="train-service-chip">Restauracni vuz</div>
+    <div class="train-service-chip">Rodinny vuz + detske kino</div>
+    <div class="train-service-chip">1. trida dostupna</div>
+    <div class="train-service-chip">Tichy oddil (1. tr.)</div>
+    <div class="train-service-chip">Prevoz kol (rezervace)</div>
+    <div class="train-service-chip">Bezbarierovy vuz</div>
+  </div>
+
+  <div id="tracker-box">
+    <div id="tracker-inner">
+      <div class="tracker-inactive">Nacitam...</div>
+    </div>
+  </div>
+</section>
+
+<!-- PROGRAM -->
+<section class="section" id="program">
+  <h2 class="section-title">Program</h2>
+  <div class="days">
+
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 1 — Prijezd &amp; Centrum</span>
+        <span class="day-date">Nedele 31. 5. 2026</span>
+      </div>
+      <div class="day-events">
+        <div class="event">
+          <div class="event-time">08:31</div>
+          <div><div class="event-desc">Odjezd z Prahy hl.n.</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">12:30</div>
+          <div>
+            <div class="event-desc">Prijezd Berlin Hbf, ulozeni zavazadel v hotelu</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~13:00</div>
+          <div>
+            <div class="event-desc">Obed u Unter den Linden</div>
+            <div class="event-note">Na vlastni naklady</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~14:00</div>
+          <div>
+            <div class="event-desc">Komentovana prochazka: Alexanderplatz → Brandenburg Tor → Reichstag</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~17:00</div>
+          <div><div class="event-desc">Odpoledni rozchod — nakupy</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">Vecer</div>
+          <div><div class="event-desc">Vecere v mistni restauraci</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">Volitelne</div>
+          <div>
+            <div class="event-desc">Berlinska statni opera — Verdi: Nabucco</div>
+            <div class="event-note">Unter den Linden</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 2 — Zed &amp; Muzea</span>
+        <span class="day-date">Pondeli 1. 6. 2026</span>
+      </div>
+      <div class="day-events">
+        <div class="event">
+          <div class="event-time">Rano</div>
+          <div><div class="event-desc">Snidane v hotelu</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">~9:00</div>
+          <div>
+            <div class="event-desc">Ostbahnhof — East Side Gallery</div>
+            <div class="event-note">Pozustatky Berlinske zdi</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~11:00</div>
+          <div>
+            <div class="event-desc">Prochazka Kreuzbergem → Checkpoint Charlie</div>
+            <div class="event-note">Avantgardni ctvrt a nejznamejsi hranicni prechod</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~13:00</div>
+          <div>
+            <div class="event-desc">Obed v okoli Checkpoint Charlie</div>
+            <div class="event-note">Na vlastni naklady</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~14:30</div>
+          <div>
+            <div class="event-desc">Berlinska muzea a galerie — vstup zdarma</div>
+            <div class="event-note">Zidovske muzeum · Berlinska galerie · Deutsche Kinemathek · Muzeum spionaze</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">Vecer</div>
+          <div><div class="event-desc">Spolecna vecere — Potsdamer Platz</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 3 — Museum Insel &amp; Odjezd</span>
+        <span class="day-date">Utery 2. 6. 2026</span>
+      </div>
+      <div class="day-events">
+        <div class="event">
+          <div class="event-time">Rano</div>
+          <div>
+            <div class="event-desc">Snidane v hotelu, checkout</div>
+            <div class="event-note">Zavazadla ulozena na recepci</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~10:00</div>
+          <div><div class="event-desc">Museum Insel — Berliner Dom</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">~10:30</div>
+          <div>
+            <div class="event-desc">Deutsches Historisches Museum (Altes, Neues)</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~13:00</div>
+          <div>
+            <div class="event-desc">Obed v okoli Museum Insel</div>
+            <div class="event-note">Na vlastni naklady</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~14:00</div>
+          <div>
+            <div class="event-desc">Rozchod — suvenyre, vlastni vecere / svacina na cestu</div>
+          </div>
+        </div>
+        <div class="event">
+          <div class="event-time">~18:30</div>
+          <div><div class="event-desc">Vyzvednuti zavazadel z hotelu, presun na Berlin Hbf</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">19:28</div>
+          <div><div class="event-desc">Odjezd z Berlin Hbf zpet do Prahy</div></div>
+        </div>
+        <div class="event">
+          <div class="event-time">23:31</div>
+          <div><div class="event-desc">Prijezd Praha hl.n.</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOTEL -->
+<section class="section" id="hotel">
+  <h2 class="section-title">Hotel</h2>
+  <div class="hotel-grid">
+    <div class="hotel-card">
+      <div class="info-label" style="margin-bottom:.4rem">Nazev</div>
+      <div style="font-size:1.05rem;font-weight:700;margin-bottom:.875rem">A&amp;O Hotel Berlin Hauptbahnhof</div>
+      <div class="info-label">Adresa</div>
+      <div class="info-value" style="margin-bottom:.875rem">Lehrter Str. 12, 10557 Berlin</div>
+      <div class="info-label">Stravovani</div>
+      <div class="info-value">Snidane v hotelu (polopenze)<br>Vecere v mistni restauraci</div>
+    </div>
+    <div class="hotel-card">
+      <div class="info-label" style="margin-bottom:.4rem">Bar menu</div>
+      <div class="info-value">Hotel ma vlastni bar s napoji a jidly — k dispozici pro volny cas.</div>
+      <a class="bar-link" href="https://www.aohostels.com/en/barkarte-b4/" target="_blank" rel="noopener">
+        Zobrazit bar menu &rarr;
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  ACGA &bull; Berlin 2026 &bull; Aktualizovano 30. 5. 2026
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const OUTBOUND = {
+  label: 'Praha → Berlin',
+  date: '2026-05-31',
+  stops: [
+    { name: 'Praha hl.n.',          depart: '08:31',                    lat: 50.0831, lng: 14.4347 },
+    { name: 'Praha-Holesovice',     arrive: '08:39', depart: '08:41',   lat: 50.0998, lng: 14.4357 },
+    { name: 'Usti nad Labem hl.n.', arrive: '09:41', depart: '09:43',   lat: 50.6608, lng: 14.0322 },
+    { name: 'Decin hl.n.',          arrive: '09:58', depart: '10:02',   lat: 50.7735, lng: 14.2136 },
+    { name: 'Bad Schandau',         arrive: '10:19', depart: '10:21',   lat: 50.9146, lng: 14.1466 },
+    { name: 'Dresden Hbf',          arrive: '10:50', depart: '10:53',   lat: 51.0404, lng: 13.7325 },
+    { name: 'Dresden-Neustadt',     arrive: '10:58', depart: '11:00',   lat: 51.0647, lng: 13.7372 },
+    { name: 'Berlin Sudkreuz',      arrive: '12:20', depart: '12:25',   lat: 52.4754, lng: 13.3655 },
+    { name: 'Berlin Hbf (tief)',    arrive: '12:30',                    lat: 52.5251, lng: 13.3693 },
+  ]
+};
+
+const RETURN = {
+  label: 'Berlin → Praha',
+  date: '2026-06-02',
+  stops: [
+    { name: 'Berlin Hbf (tief)',    depart: '19:28',                    lat: 52.5251, lng: 13.3693 },
+    { name: 'Berlin Sudkreuz',      arrive: '19:35', depart: '19:37',   lat: 52.4754, lng: 13.3655 },
+    { name: 'Dresden-Neustadt',     arrive: '21:00', depart: '21:02',   lat: 51.0647, lng: 13.7372 },
+    { name: 'Dresden Hbf',          arrive: '21:07', depart: '21:10',   lat: 51.0404, lng: 13.7325 },
+    { name: 'Bad Schandau',         arrive: '21:35', depart: '21:37',   lat: 50.9146, lng: 14.1466 },
+    { name: 'Decin hl.n.',          arrive: '21:53', depart: '21:57',   lat: 50.7735, lng: 14.2136 },
+    { name: 'Usti n.L.hl.n.',       arrive: '22:11', depart: '22:13',   lat: 50.6608, lng: 14.0322 },
+    { name: 'Lovosice',             arrive: '22:29', depart: '22:30',   lat: 50.5143, lng: 14.0508 },
+    { name: 'Roudnice n.Labem',     arrive: '22:38', depart: '22:40',   lat: 50.4267, lng: 14.2617 },
+    { name: 'Kralupy n.Vltavou',    arrive: '23:00', depart: '23:01',   lat: 50.2397, lng: 14.3128 },
+    { name: 'Praha-Holesovice',     arrive: '23:21', depart: '23:21',   lat: 50.0998, lng: 14.4357 },
+    { name: 'Praha hl.n.',          arrive: '23:31',                    lat: 50.0831, lng: 14.4347 },
+  ]
+};
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function toMin(str) {
+  if (!str) return null;
+  const [h, m] = str.split(':').map(Number);
+  return h * 60 + m;
+}
+function lerp(a, b, t) { return a + (b - a) * t; }
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function nowMin() {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+}
+function fmtCountdown(ms) {
+  if (ms < 0) return null;
+  const tot = Math.floor(ms / 1000);
+  const d = Math.floor(tot / 86400);
+  const h = Math.floor((tot % 86400) / 3600);
+  const m = Math.floor((tot % 3600) / 60);
+  return d > 0 ? `${d}d ${h}h ${m}m` : h > 0 ? `${h}h ${m}m` : `${m} min`;
+}
+
+// ── JOURNEY STATE ─────────────────────────────────────────────────
+function journeyState(journey, min) {
+  const stops = journey.stops;
+  const firstDep = toMin(stops[0].depart);
+  const lastArr = toMin(stops[stops.length - 1].arrive);
+
+  if (min < firstDep)  return { phase: 'before', firstStop: stops[0], minutesUntil: firstDep - min };
+  if (lastArr && min >= lastArr) return { phase: 'arrived', lastStop: stops[stops.length - 1] };
+
+  for (let i = 0; i < stops.length; i++) {
+    const s = stops[i];
+    const arr = toMin(s.arrive);
+    const dep = toMin(s.depart);
+
+    // sitting at station
+    if (arr !== null && dep !== null && min >= arr && min < dep) {
+      return { phase: 'at_station', stopIdx: i, stop: s, nextStop: stops[i+1] || null,
+               lat: s.lat, lng: s.lng, departsIn: dep - min };
+    }
+
+    // moving to next stop
+    if (dep !== null && i < stops.length - 1) {
+      const nxt = stops[i + 1];
+      const nxtArr = toMin(nxt.arrive) ?? toMin(nxt.depart);
+      if (min >= dep && min < nxtArr) {
+        const t = (min - dep) / (nxtArr - dep);
+        return { phase: 'moving', segIdx: i, fromStop: s, toStop: nxt,
+                 lat: lerp(s.lat, nxt.lat, t), lng: lerp(s.lng, nxt.lng, t),
+                 etaMin: nxtArr - min };
+      }
+    }
+  }
+  return { phase: 'arrived', lastStop: stops[stops.length - 1] };
+}
+
+// ── MAP INIT ──────────────────────────────────────────────────────
+let map, trainMarker;
+function buildMap(journey) {
+  const coords = journey.stops.map(s => [s.lat, s.lng]);
+  map = L.map('train-map', { zoomControl: false, attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 16 }).addTo(map);
+
+  // route
+  L.polyline(coords, { color: '#f5d020', weight: 3, opacity: .65 }).addTo(map);
+
+  // station dots
+  journey.stops.forEach(s => {
+    L.circleMarker([s.lat, s.lng], {
+      radius: 5, color: '#f5d020', fillColor: '#1a1d26', fillOpacity: 1, weight: 2
+    }).bindTooltip(s.name, { direction: 'top', permanent: false }).addTo(map);
+  });
+
+  // train icon
+  const icon = L.divIcon({
+    html: '<div style="width:14px;height:14px;background:#f5d020;border-radius:50%;border:3px solid #0f1117;box-shadow:0 0 10px rgba(245,208,32,.7)"></div>',
+    className: '', iconAnchor: [7, 7]
+  });
+  trainMarker = L.marker(coords[0], { icon, zIndexOffset: 1000 }).addTo(map);
+  map.fitBounds(L.latLngBounds(coords), { padding: [30, 30] });
+}
+
+// ── RENDER TRACKER ────────────────────────────────────────────────
+function renderTracker(journey) {
+  document.getElementById('tracker-inner').innerHTML = `
+    <div id="train-map"></div>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="pf" style="width:0%"></div></div>
+      <div class="progress-labels">
+        <span>${journey.stops[0].name}</span>
+        <span>${journey.stops[journey.stops.length-1].name}</span>
+      </div>
+    </div>
+    <div class="tracker-status">
+      <div class="status-left">
+        <div class="live-dot"></div>
+        <div>
+          <div class="status-label">Aktualni stav</div>
+          <div class="status-val" id="t-status">...</div>
+        </div>
+      </div>
+      <div>
+        <div class="status-label">Pristi zastavka</div>
+        <div class="status-val" id="t-next">—</div>
+      </div>
+    </div>
+    <div class="stop-list" id="stop-list"></div>
+  `;
+  buildMap(journey);
+}
+
+function updateTracker(journey) {
+  const min = nowMin();
+  const state = journeyState(journey, min);
+  const stops = journey.stops;
+
+  const firstDep = toMin(stops[0].depart);
+  const lastArr  = toMin(stops[stops.length - 1].arrive);
+  const pct = Math.max(0, Math.min(100, (min - firstDep) / (lastArr - firstDep) * 100));
+  document.getElementById('pf').style.width = pct + '%';
+
+  const statusEl = document.getElementById('t-status');
+  const nextEl   = document.getElementById('t-next');
+
+  if (state.phase === 'before') {
+    const h = Math.floor(state.minutesUntil / 60), m = Math.round(state.minutesUntil % 60);
+    statusEl.textContent = `Odjezd za ${h > 0 ? h+'h ' : ''}${m}min`;
+    nextEl.textContent = stops[0].name;
+  } else if (state.phase === 'at_station') {
+    statusEl.textContent = `Na stanici: ${state.stop.name}`;
+    const dep = Math.round(state.departsIn);
+    nextEl.textContent = state.nextStop
+      ? `${state.nextStop.name}${dep > 0 ? ` (za ${dep}min)` : ''}`
+      : '—';
+    trainMarker.setLatLng([state.lat, state.lng]);
+  } else if (state.phase === 'moving') {
+    statusEl.textContent = `${state.fromStop.name} → ${state.toStop.name}`;
+    nextEl.textContent = `${state.toStop.name} (~${Math.round(state.etaMin)} min)`;
+    trainMarker.setLatLng([state.lat, state.lng]);
+    map.panTo([state.lat, state.lng], { animate: true, duration: 1 });
+  } else {
+    statusEl.textContent = 'Dorazili!';
+    nextEl.textContent = stops[stops.length - 1].name;
+    document.getElementById('pf').style.width = '100%';
+  }
+
+  // stop list
+  let html = '';
+  stops.forEach((s, i) => {
+    let cls = 'future';
+    if (state.phase === 'moving') {
+      if (i <= state.segIdx) cls = 'passed';
+      else if (i === state.segIdx + 1) cls = 'current';
+    } else if (state.phase === 'at_station') {
+      if (i < state.stopIdx) cls = 'passed';
+      else if (i === state.stopIdx) cls = 'current';
+    } else if (state.phase === 'arrived') {
+      cls = 'passed';
+    }
+    const time = [s.arrive, s.depart].filter(Boolean).join('–');
+    const badge = cls === 'passed' ? '&#10003;' : i + 1;
+    html += `<div class="stop-item ${cls}">
+      <div class="stop-dot">${badge}</div>
+      <span class="stop-name">${s.name}</span>
+      <span class="stop-time">${time}</span>
+    </div>`;
+  });
+  document.getElementById('stop-list').innerHTML = html;
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  const today = todayStr();
+  let journey = null;
+  if (today === OUTBOUND.date) journey = OUTBOUND;
+  if (today === RETURN.date)   journey = RETURN;
+
+  if (!journey) {
+    const dep = new Date('2026-05-31T08:31:00');
+    const end = new Date('2026-06-02T23:31:00');
+    const now = new Date();
+
+    if (now > end) {
+      document.getElementById('tracker-inner').innerHTML = `
+        <div class="tracker-inactive">
+          <div class="countdown-big">Vylet skoncil</div>
+          <div>Doufame, ze si Berlin uzili!</div>
+        </div>`;
+    } else {
+      const cd = fmtCountdown(dep - now);
+      document.getElementById('tracker-inner').innerHTML = `
+        <div class="tracker-inactive">
+          <div style="font-size:.9rem">Odjezd za</div>
+          <div class="countdown-big">${cd}</div>
+          <div>31. 5. 2026 · 08:31 Praha hl.n.</div>
+        </div>`;
+      // refresh countdown each minute
+      setInterval(() => {
+        const rem = fmtCountdown(dep - new Date());
+        const el = document.querySelector('.countdown-big');
+        if (el) el.textContent = rem;
+      }, 30000);
+    }
+    return;
+  }
+
+  renderTracker(journey);
+  updateTracker(journey);
+  setInterval(() => updateTracker(journey), 30000);
+}
+
+init();
+</script>
+</body>
+</html>
