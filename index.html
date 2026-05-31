@@ -3,7 +3,20 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Berlin 2026 — ACGA</title>
+  <title>Berlín 2026 — ACGA školní výlet</title>
+  <meta name="description" content="Školní výlet ACGA do Berlína 31. 5. – 2. 6. 2026. Program, vlakový tracker, hotel, tísňové kontakty a kalkulačka Kč/€."/>
+  <meta name="theme-color" content="#0f1117"/>
+  <meta name="color-scheme" content="dark"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Berlín 2026 — ACGA školní výlet"/>
+  <meta property="og:description" content="Program, vlakový tracker, hotel, tísňové kontakty. 31. 5. – 2. 6. 2026."/>
+  <meta property="og:locale" content="cs_CZ"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="Berlín 2026 — ACGA školní výlet"/>
+  <meta name="twitter:description" content="Program, vlakový tracker, hotel, tísňové kontakty. 31. 5. – 2. 6. 2026."/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f1117'/><text x='32' y='42' font-family='system-ui,sans-serif' font-size='28' font-weight='800' fill='%23f5d020' text-anchor='middle'>B26</text></svg>"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='36' fill='%230f1117'/><text x='96' y='126' font-family='system-ui,sans-serif' font-size='84' font-weight='800' fill='%23f5d020' text-anchor='middle'>B26</text></svg>"/>
+  <link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"Berlín 2026 — ACGA","short_name":"Berlín 2026","description":"Školní výlet ACGA do Berlína 31.5.–2.6.2026","start_url":"./","scope":"./","display":"standalone","orientation":"portrait","background_color":"%230f1117","theme_color":"%230f1117","lang":"cs","icons":[{"src":"data:image/svg%2Bxml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 512 512%27><rect width=%27512%27 height=%27512%27 rx=%2796%27 fill=%27%230f1117%27/><text x=%27256%27 y=%27336%27 font-family=%27system-ui,sans-serif%27 font-size=%27224%27 font-weight=%27800%27 fill=%27%23f5d020%27 text-anchor=%27middle%27>B26</text></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
@@ -174,6 +187,143 @@
     .stop-item.passed .stop-name { color: var(--muted); }
     .stop-time { font-size: .78rem; color: var(--muted); white-space: nowrap; }
 
+    /* share button + toast */
+    .share-btn {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: .35rem .75rem; font-size: .8rem; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: background .15s, border-color .15s;
+    }
+    .share-btn:hover { background: var(--surface); border-color: var(--gold); }
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--gold);
+      padding: .65rem 1.2rem; border-radius: 8px;
+      font-size: .9rem; font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* nav active state */
+    .nav-links a.active {
+      color: var(--gold);
+      background: var(--surface);
+    }
+
+    /* add to calendar button */
+    .ics-btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: transparent; color: var(--gold);
+      border: 1px solid var(--gold); border-radius: 8px;
+      padding: .55rem 1rem; font-size: .85rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; text-decoration: none;
+      transition: background .15s;
+      margin-top: 1rem;
+    }
+    .ics-btn:hover { background: rgba(245,208,32,.1); }
+
+    /* emergency contacts */
+    .emergency-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid #ef4444;
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+    }
+    .emergency-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem; margin-top: 1rem;
+    }
+    .emergency-item {
+      padding: .75rem; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+    }
+    .em-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--muted); margin-bottom: .3rem; }
+    .em-value { font-size: .9rem; font-weight: 500; }
+    .em-value a { color: var(--gold); text-decoration: none; }
+    .em-value a:hover { text-decoration: underline; }
+    .em-primary { background: rgba(239,68,68,.08); border-color: rgba(239,68,68,.3); }
+    .em-primary .em-value { font-size: 1.5rem; font-weight: 700; color: #ef4444; }
+
+    /* currency calculator */
+    .calc-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1.25rem 1.5rem;
+    }
+    .calc-row {
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: .75rem; align-items: center;
+    }
+    .calc-input-wrap { position: relative; }
+    .calc-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: .75rem .75rem .75rem 3rem;
+      color: var(--text); font-size: 1.1rem; font-weight: 600;
+      font-family: inherit;
+    }
+    .calc-input:focus { outline: 2px solid var(--gold); outline-offset: -1px; }
+    .calc-prefix {
+      position: absolute; left: .85rem; top: 50%; transform: translateY(-50%);
+      color: var(--muted); font-weight: 600; pointer-events: none;
+    }
+    .calc-arrow { color: var(--muted); font-size: 1.2rem; }
+    .calc-rate {
+      margin-top: .75rem; font-size: .78rem; color: var(--muted);
+      display: flex; justify-content: space-between; flex-wrap: wrap; gap: .5rem;
+    }
+    .calc-rate strong { color: var(--text); font-variant-numeric: tabular-nums; }
+    @media (max-width: 480px) {
+      .calc-row { grid-template-columns: 1fr; }
+      .calc-arrow { transform: rotate(90deg); }
+    }
+
+    /* hero countdown */
+    .hero-countdown {
+      margin-top: 2rem;
+      display: inline-flex; align-items: baseline; gap: .65rem;
+      padding: .85rem 1.5rem;
+      background: rgba(245,208,32,.08);
+      border: 1px solid rgba(245,208,32,.3);
+      border-radius: 12px;
+    }
+    .cd-label { color: var(--muted); font-size: .85rem; }
+    .cd-value { color: var(--gold); font-weight: 700; font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+
+    /* now card */
+    .now-section { padding-top: 2rem; padding-bottom: 0; border-bottom: none; }
+    .now-box {
+      background: linear-gradient(135deg, rgba(245,208,32,.12), rgba(245,208,32,.03));
+      border: 1px solid rgba(245,208,32,.35);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      position: relative; overflow: hidden;
+    }
+    .now-box::before {
+      content: ''; position: absolute; top: 0; left: 0; bottom: 0;
+      width: 4px; background: var(--gold);
+    }
+    .now-label {
+      display: inline-flex; align-items: center; gap: .5rem;
+      font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--gold); margin-bottom: .6rem;
+    }
+    .now-label::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: var(--gold); box-shadow: 0 0 0 3px rgba(245,208,32,.3);
+      animation: blink 2s infinite;
+    }
+    .now-current { font-size: 1.15rem; font-weight: 600; margin-bottom: .4rem; }
+    .now-next-wrap { font-size: .85rem; color: var(--muted); }
+    .now-next-label { font-weight: 600; }
+    .now-next { color: var(--text); }
+
     /* train service chips */
     .train-services {
       display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
@@ -234,9 +384,275 @@
       border-top: 1px solid var(--border);
     }
 
+    /* checklist */
+    .checklist-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: .5rem;
+    }
+    .checklist-item {
+      display: flex; align-items: center; gap: .75rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: .65rem .85rem;
+      cursor: pointer; user-select: none;
+      transition: border-color .15s;
+    }
+    .checklist-item:hover { border-color: var(--gold); }
+    .checklist-item input {
+      appearance: none; -webkit-appearance: none;
+      width: 18px; height: 18px; border: 2px solid var(--border);
+      border-radius: 4px; cursor: pointer;
+      position: relative; flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .checklist-item input:checked {
+      background: var(--gold); border-color: var(--gold);
+    }
+    .checklist-item input:checked::after {
+      content: '✓'; position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%); color: #000;
+      font-size: 14px; font-weight: 700;
+    }
+    .checklist-item span { font-size: .9rem; }
+    .checklist-item.checked span {
+      color: var(--muted); text-decoration: line-through;
+    }
+    .checklist-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 1rem; font-size: .85rem; color: var(--muted);
+    }
+    .checklist-progress-bar {
+      flex: 1; height: 4px; background: var(--border);
+      border-radius: 999px; margin: 0 1rem; overflow: hidden;
+    }
+    .checklist-progress-fill {
+      height: 100%; background: var(--gold);
+      transition: width .25s;
+    }
+    .checklist-reset {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); border-radius: 6px;
+      padding: .3rem .7rem; font-size: .75rem; cursor: pointer;
+      font-family: inherit;
+    }
+    .checklist-reset:hover { color: var(--text); border-color: var(--text); }
+
+    /* german phrases */
+    .phrases-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+    .phrase-group {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+    }
+    .phrase-group-title {
+      font-size: .72rem; text-transform: uppercase; letter-spacing: .08em;
+      color: var(--gold); font-weight: 700; margin-bottom: .75rem;
+    }
+    .phrase-row {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: .4rem 0; border-bottom: 1px solid var(--border);
+      gap: .5rem;
+    }
+    .phrase-row:last-child { border-bottom: none; }
+    .phrase-cs { font-size: .85rem; }
+    .phrase-de { font-size: .85rem; color: var(--gold); font-weight: 500; text-align: right; }
+
+    /* QR code */
+    .qr-box {
+      text-align: center;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 1.5rem;
+    }
+    .qr-img {
+      width: 220px; height: 220px;
+      border-radius: 10px; background: #fff;
+      padding: 12px; display: block; margin: 0 auto 1rem;
+    }
+    .qr-caption { color: var(--muted); font-size: .85rem; }
+
+    /* theme toggle */
+    .theme-btn {
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px;
+      width: 32px; height: 32px; padding: 0;
+      cursor: pointer; font-family: inherit; font-size: 1rem;
+      transition: background .15s, border-color .15s;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .theme-btn:hover { background: var(--surface); border-color: var(--gold); }
+
+    /* light theme overrides */
+    body.light {
+      --bg:      #f7f8fc;
+      --surface: #ffffff;
+      --border:  #d6dae6;
+      --gold:    #a07b00;
+      --gold-dk: #7a5e00;
+      --text:    #1a1d26;
+      --muted:   #5d6478;
+    }
+    body.light nav { background: rgba(247,248,252,.95); }
+    body.light .hero {
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, #e0e6f0 0%, var(--bg) 80%);
+    }
+    body.light .qr-img { background: #f7f8fc; padding: 8px; border: 1px solid var(--border); }
+    body.light .leaflet-popup-content-wrapper {
+      background: #fff; color: var(--text); border-color: var(--border);
+    }
+    body.light .leaflet-popup-tip { background: #fff; }
+    body.light .em-primary { background: rgba(239,68,68,.06); }
+
+    /* print */
+    @media print {
+      body { background: #fff; color: #000; }
+      nav, .hero-countdown, .now-section, .train-services,
+      #tracker-box, #attractions-map, #hotel-map, .map-legend,
+      .gallery-grid, .calc-box, #share-btn, #hamburger, .ics-btn,
+      #theme-btn, .toast, .weather-grid, .qr-box,
+      #checklist, #frazem, #qrcode, #fotky, #mapa, #pocasi,
+      #kalkulacka, #vlak {
+        display: none !important;
+      }
+      .section { page-break-inside: avoid; border-bottom: 1px solid #ccc; }
+      .hero { background: #fff; color: #000; padding: 1.5rem 1rem; }
+      .hero h1 { color: #000; font-size: 1.8rem; }
+      .hero h1 em { color: #000; }
+      .hero-sub, .hero-pill span, .hero-tag { color: #555; }
+      .hero-pill strong { color: #000; }
+      .day-card, .info-card, .hotel-card, .emergency-box, .emergency-item {
+        background: #fff; border: 1px solid #ccc; color: #000;
+        page-break-inside: avoid;
+      }
+      .info-label, .em-label, .day-date { color: #666; }
+      .info-value, .em-value, .day-title, .event-desc, .event-note { color: #000; }
+      .event-time { color: #555; }
+      .em-value a { color: #000; }
+    }
+
+    /* attractions map */
+    #attractions-map { height: 420px; border-radius: 12px; border: 1px solid var(--border); }
+    .map-legend {
+      display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1rem;
+    }
+    .legend-chip {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: .3rem .7rem; border-radius: 999px;
+      font-size: .8rem; font-weight: 500;
+    }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+    }
+    .leaflet-popup-content-wrapper {
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .leaflet-popup-tip { background: var(--surface); }
+    .leaflet-popup-content { margin: .65rem .85rem; font-size: .85rem; }
+    .leaflet-popup-content strong { color: var(--gold); }
+
+    /* weather */
+    .weather-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: .75rem;
+    }
+    .weather-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+      display: flex; flex-direction: column; gap: .35rem;
+    }
+    .weather-day {
+      font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    }
+    .weather-temp {
+      font-size: 1.5rem; font-weight: 700; color: var(--gold);
+      font-variant-numeric: tabular-nums;
+    }
+    .weather-temp .min { color: var(--muted); font-size: 1rem; font-weight: 500; margin-left: .35rem; }
+    .weather-desc { font-size: .85rem; }
+    .weather-extra { font-size: .75rem; color: var(--muted); }
+
+    /* photo gallery */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: .65rem;
+    }
+    .gallery-item {
+      position: relative; aspect-ratio: 1;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden;
+    }
+    .gallery-item img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .35s;
+    }
+    .gallery-item:hover img { transform: scale(1.06); }
+    .gallery-caption {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(transparent, rgba(0,0,0,.85));
+      color: #fff; padding: .8rem .75rem .55rem;
+      font-size: .78rem; font-weight: 600;
+    }
+    .gallery-day {
+      position: absolute; top: .5rem; right: .5rem;
+      background: var(--gold); color: #000;
+      font-size: .68rem; font-weight: 700; padding: .15rem .45rem;
+      border-radius: 999px;
+    }
+
+    /* enhanced tracker */
+    .stop-item { cursor: pointer; }
+    .stop-item:hover { background: rgba(245,208,32,.05); border-radius: 6px; }
+    .tracker-meta {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: .75rem; padding: .75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: .78rem;
+    }
+    .meta-item { display: flex; flex-direction: column; gap: .15rem; }
+    .meta-label { color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-size: .68rem; }
+    .meta-val { font-weight: 600; font-size: .9rem; }
+
+    /* hamburger */
+    .hamburger {
+      display: none;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text); border-radius: 6px;
+      width: 36px; height: 32px; padding: 0;
+      cursor: pointer; flex-direction: column; gap: 4px;
+      justify-content: center; align-items: center;
+    }
+    .hamburger span {
+      display: block; width: 16px; height: 2px; background: var(--text);
+      transition: transform .2s, opacity .2s;
+    }
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
     /* ── RESPONSIVE ── */
+    @media (max-width: 720px) {
+      .hamburger { display: flex; }
+      .nav-links {
+        position: fixed; top: 52px; left: 0; right: 0;
+        flex-direction: column; gap: 0;
+        background: rgba(15,17,23,.98); backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: .5rem 0;
+        max-height: 0; overflow: hidden;
+        transition: max-height .25s ease;
+      }
+      .nav-links.open { max-height: 80vh; }
+      .nav-links li { border-bottom: 1px solid var(--border); }
+      .nav-links li:last-child { border-bottom: none; }
+      .nav-links a {
+        display: block; padding: .85rem 1.5rem; font-size: .95rem;
+        border-radius: 0;
+      }
+    }
     @media (max-width: 620px) {
-      .nav-links { display: none; }
       .hotel-grid { grid-template-columns: 1fr; }
       .hero h1 { font-size: 2.5rem; }
     }
@@ -246,38 +662,65 @@
 
 <!-- NAV -->
 <nav>
-  <a class="nav-brand" href="#">Berlin 2026</a>
-  <ul class="nav-links">
-    <li><a href="#info">Informace</a></li>
+  <a class="nav-brand" href="#">Berlín 2026</a>
+  <ul class="nav-links" id="nav-links">
+    <li><a href="#info">Info</a></li>
     <li><a href="#vlak">Vlak</a></li>
     <li><a href="#program">Program</a></li>
+    <li><a href="#mapa">Mapa</a></li>
     <li><a href="#hotel">Hotel</a></li>
+    <li><a href="#fotky">Fotky</a></li>
+    <li><a href="#kalkulacka">Kč/€</a></li>
+    <li><a href="#checklist">Checklist</a></li>
+    <li><a href="#frazem">Němčina</a></li>
+    <li><a href="#emergency">Tísňové</a></li>
+    <li><a href="#qrcode">QR</a></li>
   </ul>
+  <div style="display:flex; gap:.5rem; align-items:center;">
+    <button id="theme-btn" class="theme-btn" type="button" aria-label="Přepnout světlý/tmavý režim" title="Přepnout režim">☾</button>
+    <button id="share-btn" class="share-btn" type="button" aria-label="Sdílet stránku">Sdílet</button>
+    <button id="hamburger" class="hamburger" type="button" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
 </nav>
 
 <!-- HERO -->
 <header class="hero">
-  <div class="hero-tag">ACGA skolni vylet</div>
-  <h1>Skolni vylet<br><em>Berlin 2026</em></h1>
-  <p class="hero-sub">Kulturne-jazykovy vylet do nemeckeho hlavniho mesta</p>
+  <div class="hero-tag">ACGA školní výlet</div>
+  <h1>Školní výlet<br><em>Berlín 2026</em></h1>
+  <p class="hero-sub">Kulturně-jazykový výlet do německého hlavního města</p>
   <div class="hero-pills">
-    <div class="hero-pill"><span>Termin </span><strong>31. 5. – 2. 6. 2026</strong></div>
+    <div class="hero-pill"><span>Termín </span><strong>31. 5. – 2. 6. 2026</strong></div>
     <div class="hero-pill"><span>Hotel </span><strong>A&amp;O Berlin Hbf</strong></div>
-    <div class="hero-pill"><span>Doprava </span><strong>Vlak Praha ↔ Berlin</strong></div>
-    <div class="hero-pill"><span>Cena </span><strong>6 900 Kc / ucastnik</strong></div>
+    <div class="hero-pill"><span>Doprava </span><strong>Vlak Praha ↔ Berlín</strong></div>
+    <div class="hero-pill"><span>Cena </span><strong>6 900 Kč / účastník</strong></div>
+  </div>
+  <div class="hero-countdown" id="hero-countdown" hidden>
+    <span class="cd-label" id="cd-label">Výlet začíná za</span>
+    <span class="cd-value" id="cd-value">—</span>
   </div>
 </header>
+
+<!-- NOW CARD (visible only during trip) -->
+<section class="section now-section" id="now-section" hidden>
+  <div class="now-box">
+    <div class="now-label">Co se děje teď</div>
+    <div class="now-current" id="now-current">—</div>
+    <div class="now-next-wrap"><span class="now-next-label">Příští:</span> <span class="now-next" id="now-next">—</span></div>
+  </div>
+</section>
 
 <!-- INFORMACE -->
 <section class="section" id="info">
   <h2 class="section-title">Informace</h2>
   <div class="info-grid">
     <div class="info-card">
-      <div class="info-label">Misto</div>
-      <div class="info-value">Berlin, Nemecko</div>
+      <div class="info-label">Místo</div>
+      <div class="info-value">Berlín, Německo</div>
     </div>
     <div class="info-card">
-      <div class="info-label">Termin</div>
+      <div class="info-label">Termín</div>
       <div class="info-value">31. 5. – 2. 6. 2026</div>
     </div>
     <div class="info-card">
@@ -285,47 +728,56 @@
       <div class="info-value">Vlak, Praha hl.n. ↔ Berlin Hbf</div>
     </div>
     <div class="info-card">
-      <div class="info-label">Ubytovani</div>
-      <div class="info-value">A&amp;O Hotel – Berlin Hauptbahnhof<br>nocleharna s vlastnim soc. zarizenim</div>
+      <div class="info-label">Ubytování</div>
+      <div class="info-value">A&amp;O Hotel – Berlin Hauptbahnhof<br>noclehárna s vlastním soc. zařízením</div>
     </div>
     <div class="info-card">
-      <div class="info-label">Stravovani</div>
-      <div class="info-value">Polopenze (snidane v hotelu, vecere v restauracich)</div>
+      <div class="info-label">Stravování</div>
+      <div class="info-value">Polopenze (snídaně v hotelu, večeře v restauracích)</div>
     </div>
     <div class="info-card">
       <div class="info-label">Doprovod</div>
-      <div class="info-value">Martin Simek, Matyas Suk, zdravotnice</div>
+      <div class="info-value">Martin Šimek, Matyáš Suk, zdravotnice</div>
     </div>
     <div class="info-card">
       <div class="info-label">Cena zahrnuje</div>
-      <div class="info-value">Doprava s mistenkami, ubytovani (lozni pradlo, mestska taxa), strava, pruvodce, prevoz batohu, vstupy</div>
+      <div class="info-value">Doprava s místenkami, ubytování (ložní prádlo, městská taxa), strava, průvodce, převoz batohů, vstupy</div>
     </div>
     <div class="info-card">
       <div class="info-label">Kontakt</div>
       <div class="info-value"><a href="mailto:martin.simek@acga.cz">martin.simek@acga.cz</a></div>
     </div>
   </div>
+  <button class="ics-btn" id="ics-btn" type="button">Přidat výlet do kalendáře (.ics)</button>
 </section>
 
 <!-- VLAK -->
 <section class="section" id="vlak">
-  <h2 class="section-title">Vlakovy tracker</h2>
+  <h2 class="section-title">Vlakový tracker</h2>
 
   <div class="train-services">
     <div class="train-service-chip">WiFi</div>
-    <div class="train-service-chip">230V zasuvky</div>
-    <div class="train-service-chip">Restauracni vuz</div>
-    <div class="train-service-chip">Rodinny vuz + detske kino</div>
-    <div class="train-service-chip">1. trida dostupna</div>
-    <div class="train-service-chip">Tichy oddil (1. tr.)</div>
-    <div class="train-service-chip">Prevoz kol (rezervace)</div>
-    <div class="train-service-chip">Bezbarierovy vuz</div>
+    <div class="train-service-chip">230V zásuvky</div>
+    <div class="train-service-chip">Restaurační vůz</div>
+    <div class="train-service-chip">Rodinný vůz + dětské kino</div>
+    <div class="train-service-chip">1. třída dostupná</div>
+    <div class="train-service-chip">Tichý oddíl (1. tř.)</div>
+    <div class="train-service-chip">Převoz kol (rezervace)</div>
+    <div class="train-service-chip">Bezbariérový vůz</div>
   </div>
 
   <div id="tracker-box">
     <div id="tracker-inner">
-      <div class="tracker-inactive">Nacitam...</div>
+      <div class="tracker-inactive">Načítám...</div>
     </div>
+  </div>
+</section>
+
+<!-- POČASÍ -->
+<section class="section" id="pocasi">
+  <h2 class="section-title">Počasí v Berlíně</h2>
+  <div class="weather-grid" id="weather-grid">
+    <div class="weather-card"><div class="weather-day">Načítám…</div></div>
   </div>
 </section>
 
@@ -336,8 +788,8 @@
 
     <div class="day-card">
       <div class="day-header">
-        <span class="day-title">Den 1 — Prijezd &amp; Centrum</span>
-        <span class="day-date">Nedele 31. 5. 2026</span>
+        <span class="day-title">Den 1 — Příjezd &amp; Centrum</span>
+        <span class="day-date">Neděle 31. 5. 2026</span>
       </div>
       <div class="day-events">
         <div class="event">
@@ -347,34 +799,34 @@
         <div class="event">
           <div class="event-time">12:30</div>
           <div>
-            <div class="event-desc">Prijezd Berlin Hbf, ulozeni zavazadel v hotelu</div>
+            <div class="event-desc">Příjezd Berlin Hbf, uložení zavazadel v hotelu</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~13:00</div>
           <div>
-            <div class="event-desc">Obed u Unter den Linden</div>
-            <div class="event-note">Na vlastni naklady</div>
+            <div class="event-desc">Oběd u Unter den Linden</div>
+            <div class="event-note">Na vlastní náklady</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~14:00</div>
           <div>
-            <div class="event-desc">Komentovana prochazka: Alexanderplatz → Brandenburg Tor → Reichstag</div>
+            <div class="event-desc">Komentovaná procházka: Alexanderplatz → Brandenburg Tor → Reichstag</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~17:00</div>
-          <div><div class="event-desc">Odpoledni rozchod — nakupy</div></div>
+          <div><div class="event-desc">Odpolední rozchod — nákupy</div></div>
         </div>
         <div class="event">
-          <div class="event-time">Vecer</div>
-          <div><div class="event-desc">Vecere v mistni restauraci</div></div>
+          <div class="event-time">Večer</div>
+          <div><div class="event-desc">Večeře v místní restauraci</div></div>
         </div>
         <div class="event">
-          <div class="event-time">Volitelne</div>
+          <div class="event-time">Volitelné</div>
           <div>
-            <div class="event-desc">Berlinska statni opera — Verdi: Nabucco</div>
+            <div class="event-desc">Berlínská státní opera — Verdi: Nabucco</div>
             <div class="event-note">Unter den Linden</div>
           </div>
         </div>
@@ -383,45 +835,45 @@
 
     <div class="day-card">
       <div class="day-header">
-        <span class="day-title">Den 2 — Zed &amp; Muzea</span>
-        <span class="day-date">Pondeli 1. 6. 2026</span>
+        <span class="day-title">Den 2 — Zeď &amp; Muzea</span>
+        <span class="day-date">Pondělí 1. 6. 2026</span>
       </div>
       <div class="day-events">
         <div class="event">
-          <div class="event-time">Rano</div>
-          <div><div class="event-desc">Snidane v hotelu</div></div>
+          <div class="event-time">Ráno</div>
+          <div><div class="event-desc">Snídaně v hotelu</div></div>
         </div>
         <div class="event">
           <div class="event-time">~9:00</div>
           <div>
             <div class="event-desc">Ostbahnhof — East Side Gallery</div>
-            <div class="event-note">Pozustatky Berlinske zdi</div>
+            <div class="event-note">Pozůstatky Berlínské zdi</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~11:00</div>
           <div>
-            <div class="event-desc">Prochazka Kreuzbergem → Checkpoint Charlie</div>
-            <div class="event-note">Avantgardni ctvrt a nejznamejsi hranicni prechod</div>
+            <div class="event-desc">Procházka Kreuzbergem → Checkpoint Charlie</div>
+            <div class="event-note">Avantgardní čtvrť a nejznámější hraniční přechod</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~13:00</div>
           <div>
-            <div class="event-desc">Obed v okoli Checkpoint Charlie</div>
-            <div class="event-note">Na vlastni naklady</div>
+            <div class="event-desc">Oběd v okolí Checkpoint Charlie</div>
+            <div class="event-note">Na vlastní náklady</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~14:30</div>
           <div>
-            <div class="event-desc">Berlinska muzea a galerie — vstup zdarma</div>
-            <div class="event-note">Zidovske muzeum · Berlinska galerie · Deutsche Kinemathek · Muzeum spionaze</div>
+            <div class="event-desc">Berlínská muzea a galerie — vstup zdarma</div>
+            <div class="event-note">Židovské muzeum · Berlínská galerie · Deutsche Kinemathek · Muzeum špionáže</div>
           </div>
         </div>
         <div class="event">
-          <div class="event-time">Vecer</div>
-          <div><div class="event-desc">Spolecna vecere — Potsdamer Platz</div></div>
+          <div class="event-time">Večer</div>
+          <div><div class="event-desc">Společná večeře — Potsdamer Platz</div></div>
         </div>
       </div>
     </div>
@@ -429,14 +881,14 @@
     <div class="day-card">
       <div class="day-header">
         <span class="day-title">Den 3 — Museum Insel &amp; Odjezd</span>
-        <span class="day-date">Utery 2. 6. 2026</span>
+        <span class="day-date">Úterý 2. 6. 2026</span>
       </div>
       <div class="day-events">
         <div class="event">
-          <div class="event-time">Rano</div>
+          <div class="event-time">Ráno</div>
           <div>
-            <div class="event-desc">Snidane v hotelu, checkout</div>
-            <div class="event-note">Zavazadla ulozena na recepci</div>
+            <div class="event-desc">Snídaně v hotelu, checkout</div>
+            <div class="event-note">Zavazadla uložena na recepci</div>
           </div>
         </div>
         <div class="event">
@@ -452,27 +904,27 @@
         <div class="event">
           <div class="event-time">~13:00</div>
           <div>
-            <div class="event-desc">Obed v okoli Museum Insel</div>
-            <div class="event-note">Na vlastni naklady</div>
+            <div class="event-desc">Oběd v okolí Museum Insel</div>
+            <div class="event-note">Na vlastní náklady</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~14:00</div>
           <div>
-            <div class="event-desc">Rozchod — suvenyre, vlastni vecere / svacina na cestu</div>
+            <div class="event-desc">Rozchod — suvenýry, vlastní večeře / svačina na cestu</div>
           </div>
         </div>
         <div class="event">
           <div class="event-time">~18:30</div>
-          <div><div class="event-desc">Vyzvednuti zavazadel z hotelu, presun na Berlin Hbf</div></div>
+          <div><div class="event-desc">Vyzvednutí zavazadel z hotelu, přesun na Berlin Hbf</div></div>
         </div>
         <div class="event">
           <div class="event-time">19:28</div>
-          <div><div class="event-desc">Odjezd z Berlin Hbf zpet do Prahy</div></div>
+          <div><div class="event-desc">Odjezd z Berlin Hbf zpět do Prahy</div></div>
         </div>
         <div class="event">
           <div class="event-time">23:31</div>
-          <div><div class="event-desc">Prijezd Praha hl.n.</div></div>
+          <div><div class="event-desc">Příjezd Praha hl.n.</div></div>
         </div>
       </div>
     </div>
@@ -480,31 +932,160 @@
   </div>
 </section>
 
+<!-- MAPA ATRAKCÍ -->
+<section class="section" id="mapa">
+  <h2 class="section-title">Mapa atrakcí</h2>
+  <div class="map-legend">
+    <div class="legend-chip"><span class="legend-dot" style="background:#f5d020"></span>Den 1 (neděle)</div>
+    <div class="legend-chip"><span class="legend-dot" style="background:#3b82f6"></span>Den 2 (pondělí)</div>
+    <div class="legend-chip"><span class="legend-dot" style="background:#22c55e"></span>Den 3 (úterý)</div>
+    <div class="legend-chip"><span class="legend-dot" style="background:#ef4444"></span>Hotel</div>
+  </div>
+  <div id="attractions-map"></div>
+</section>
+
 <!-- HOTEL -->
 <section class="section" id="hotel">
   <h2 class="section-title">Hotel</h2>
   <div class="hotel-grid">
     <div class="hotel-card">
-      <div class="info-label" style="margin-bottom:.4rem">Nazev</div>
+      <div class="info-label" style="margin-bottom:.4rem">Název</div>
       <div style="font-size:1.05rem;font-weight:700;margin-bottom:.875rem">A&amp;O Hotel Berlin Hauptbahnhof</div>
       <div class="info-label">Adresa</div>
       <div class="info-value" style="margin-bottom:.875rem">Lehrter Str. 12, 10557 Berlin</div>
-      <div class="info-label">Stravovani</div>
-      <div class="info-value">Snidane v hotelu (polopenze)<br>Vecere v mistni restauraci</div>
+      <div class="info-label">Stravování</div>
+      <div class="info-value" style="margin-bottom:.875rem">Snídaně v hotelu (polopenze)<br>Večeře v místní restauraci</div>
+      <div class="info-label">WiFi</div>
+      <div class="info-value">SSID: <strong>A&amp;O Berlin</strong><br>Heslo bude k dispozici na recepci</div>
     </div>
     <div class="hotel-card">
       <div class="info-label" style="margin-bottom:.4rem">Bar menu</div>
-      <div class="info-value">Hotel ma vlastni bar s napoji a jidly — k dispozici pro volny cas.</div>
+      <div class="info-value">Hotel má vlastní bar s nápoji a jídly — k dispozici pro volný čas.</div>
       <a class="bar-link" href="https://www.aohostels.com/en/barkarte-b4/" target="_blank" rel="noopener">
         Zobrazit bar menu &rarr;
       </a>
     </div>
   </div>
+  <div class="hotel-map-wrap" style="margin-top:1rem">
+    <div id="hotel-map" style="height:240px; border-radius:10px; border:1px solid var(--border)"></div>
+    <div style="font-size:.78rem; color:var(--muted); margin-top:.5rem; text-align:center">
+      Z Berlin Hbf cca <strong style="color:var(--text)">5 min pěšky</strong> · Lehrter Str. 12, 10557 Berlin
+    </div>
+  </div>
+</section>
+
+<!-- FOTKY -->
+<section class="section" id="fotky">
+  <h2 class="section-title">Referenční fotky</h2>
+  <div style="color:var(--muted); font-size:.85rem; margin-bottom:1rem">
+    Místa, která navštívíme. Po výletě sem doplníme vlastní fotky.
+  </div>
+  <div class="gallery-grid" id="gallery-grid"></div>
+</section>
+
+<!-- KALKULAČKA -->
+<section class="section" id="kalkulacka">
+  <h2 class="section-title">Kalkulačka Kč / €</h2>
+  <div class="calc-box">
+    <div class="calc-row">
+      <div class="calc-input-wrap">
+        <span class="calc-prefix">Kč</span>
+        <input type="number" inputmode="decimal" class="calc-input" id="calc-czk" placeholder="0" min="0" step="1">
+      </div>
+      <div class="calc-arrow">↔</div>
+      <div class="calc-input-wrap">
+        <span class="calc-prefix">€</span>
+        <input type="number" inputmode="decimal" class="calc-input" id="calc-eur" placeholder="0" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="calc-rate">
+      <span>Kurz: <strong id="calc-rate-val">načítám…</strong></span>
+      <span id="calc-rate-source">zdroj: <a href="https://www.frankfurter.app/" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none">frankfurter.app</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- CHECKLIST -->
+<section class="section" id="checklist">
+  <h2 class="section-title">Co si zabalit</h2>
+  <div class="checklist-meta">
+    <span><strong id="checklist-count">0</strong> z <strong id="checklist-total">0</strong></span>
+    <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklist-pf"></div></div>
+    <button id="checklist-reset" class="checklist-reset" type="button">Reset</button>
+  </div>
+  <div class="checklist-grid" id="checklist-grid"></div>
+</section>
+
+<!-- NĚMČINA -->
+<section class="section" id="frazem">
+  <h2 class="section-title">Mini-slovník němčiny</h2>
+  <div class="phrases-grid" id="phrases-grid"></div>
+</section>
+
+<!-- QR -->
+<section class="section" id="qrcode">
+  <h2 class="section-title">Sdílet QR kódem</h2>
+  <div class="qr-box">
+    <img id="qr-img" class="qr-img" alt="QR kód s odkazem na tuto stránku" loading="lazy">
+    <div class="qr-caption">Naskenuj mobilem nebo pošli rodičům — odkaz na tuto stránku.</div>
+  </div>
+</section>
+
+<!-- TÍSŇOVÉ KONTAKTY -->
+<section class="section" id="emergency">
+  <h2 class="section-title">Tísňové kontakty</h2>
+  <div class="emergency-box">
+    <div style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem">V případě nouze nejprve kontaktujte pedagogický doprovod. Při ohrožení života volejte 112.</div>
+    <div class="emergency-grid">
+      <div class="emergency-item em-primary">
+        <div class="em-label">Tíseň (EU)</div>
+        <div class="em-value"><a href="tel:112">112</a></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Policie DE</div>
+        <div class="em-value"><a href="tel:110">110</a></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Záchranná služba DE</div>
+        <div class="em-value"><a href="tel:112">112</a></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Martin Šimek (vedoucí)</div>
+        <div class="em-value"><a href="mailto:martin.simek@acga.cz">martin.simek@acga.cz</a><br><span style="font-size:.8rem;color:var(--muted)">Telefon obdržíte před odjezdem</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Matyáš Suk (vedoucí)</div>
+        <div class="em-value"><span style="font-size:.8rem;color:var(--muted)">Telefon obdržíte před odjezdem</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Zdravotnice</div>
+        <div class="em-value"><span style="font-size:.8rem;color:var(--muted)">Telefon obdržíte před odjezdem</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Velvyslanectví ČR v Berlíně</div>
+        <div class="em-value"><a href="tel:+4930226380">+49 30 226 380</a><br><span style="font-size:.8rem;color:var(--muted)">Wilhelmstraße 44, 10117 Berlin</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Konzulární pohotovost ČR</div>
+        <div class="em-value"><a href="tel:+420724339090">+420 724 339 090</a><br><span style="font-size:.8rem;color:var(--muted)">Ztracený pas, vážná nouze</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">A&amp;O Hotel Berlin Hbf</div>
+        <div class="em-value"><a href="https://www.aohostels.com/en/berlin/berlin-hauptbahnhof/" target="_blank" rel="noopener">aohostels.com</a><br><span style="font-size:.8rem;color:var(--muted)">Lehrter Str. 12, 10557 Berlin</span></div>
+      </div>
+      <div class="emergency-item">
+        <div class="em-label">Cestovní pojištění</div>
+        <div class="em-value"><span style="font-size:.8rem;color:var(--muted)">Asistenční číslo obdržíte před odjezdem</span></div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <footer>
-  ACGA &bull; Berlin 2026 &bull; Aktualizovano 30. 5. 2026
+  ACGA &bull; Berlín 2026 &bull; Aktualizováno 31. 5. 2026
 </footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────
@@ -513,13 +1094,13 @@ const OUTBOUND = {
   date: '2026-05-31',
   stops: [
     { name: 'Praha hl.n.',          depart: '08:31',                    lat: 50.0831, lng: 14.4347 },
-    { name: 'Praha-Holesovice',     arrive: '08:39', depart: '08:41',   lat: 50.0998, lng: 14.4357 },
-    { name: 'Usti nad Labem hl.n.', arrive: '09:41', depart: '09:43',   lat: 50.6608, lng: 14.0322 },
-    { name: 'Decin hl.n.',          arrive: '09:58', depart: '10:02',   lat: 50.7735, lng: 14.2136 },
+    { name: 'Praha-Holešovice',     arrive: '08:39', depart: '08:41',   lat: 50.0998, lng: 14.4357 },
+    { name: 'Ústí nad Labem hl.n.', arrive: '09:41', depart: '09:43',   lat: 50.6608, lng: 14.0322 },
+    { name: 'Děčín hl.n.',          arrive: '09:58', depart: '10:02',   lat: 50.7735, lng: 14.2136 },
     { name: 'Bad Schandau',         arrive: '10:19', depart: '10:21',   lat: 50.9146, lng: 14.1466 },
     { name: 'Dresden Hbf',          arrive: '10:50', depart: '10:53',   lat: 51.0404, lng: 13.7325 },
     { name: 'Dresden-Neustadt',     arrive: '10:58', depart: '11:00',   lat: 51.0647, lng: 13.7372 },
-    { name: 'Berlin Sudkreuz',      arrive: '12:20', depart: '12:25',   lat: 52.4754, lng: 13.3655 },
+    { name: 'Berlin Südkreuz',      arrive: '12:20', depart: '12:25',   lat: 52.4754, lng: 13.3655 },
     { name: 'Berlin Hbf (tief)',    arrive: '12:30',                    lat: 52.5251, lng: 13.3693 },
   ]
 };
@@ -529,16 +1110,16 @@ const RETURN = {
   date: '2026-06-02',
   stops: [
     { name: 'Berlin Hbf (tief)',    depart: '19:28',                    lat: 52.5251, lng: 13.3693 },
-    { name: 'Berlin Sudkreuz',      arrive: '19:35', depart: '19:37',   lat: 52.4754, lng: 13.3655 },
+    { name: 'Berlin Südkreuz',      arrive: '19:35', depart: '19:37',   lat: 52.4754, lng: 13.3655 },
     { name: 'Dresden-Neustadt',     arrive: '21:00', depart: '21:02',   lat: 51.0647, lng: 13.7372 },
     { name: 'Dresden Hbf',          arrive: '21:07', depart: '21:10',   lat: 51.0404, lng: 13.7325 },
     { name: 'Bad Schandau',         arrive: '21:35', depart: '21:37',   lat: 50.9146, lng: 14.1466 },
-    { name: 'Decin hl.n.',          arrive: '21:53', depart: '21:57',   lat: 50.7735, lng: 14.2136 },
-    { name: 'Usti n.L.hl.n.',       arrive: '22:11', depart: '22:13',   lat: 50.6608, lng: 14.0322 },
+    { name: 'Děčín hl.n.',          arrive: '21:53', depart: '21:57',   lat: 50.7735, lng: 14.2136 },
+    { name: 'Ústí n.L.hl.n.',       arrive: '22:11', depart: '22:13',   lat: 50.6608, lng: 14.0322 },
     { name: 'Lovosice',             arrive: '22:29', depart: '22:30',   lat: 50.5143, lng: 14.0508 },
     { name: 'Roudnice n.Labem',     arrive: '22:38', depart: '22:40',   lat: 50.4267, lng: 14.2617 },
     { name: 'Kralupy n.Vltavou',    arrive: '23:00', depart: '23:01',   lat: 50.2397, lng: 14.3128 },
-    { name: 'Praha-Holesovice',     arrive: '23:21', depart: '23:21',   lat: 50.0998, lng: 14.4357 },
+    { name: 'Praha-Holešovice',     arrive: '23:21', depart: '23:21',   lat: 50.0998, lng: 14.4357 },
     { name: 'Praha hl.n.',          arrive: '23:31',                    lat: 50.0831, lng: 14.4347 },
   ]
 };
@@ -643,18 +1224,39 @@ function renderTracker(journey) {
       <div class="status-left">
         <div class="live-dot"></div>
         <div>
-          <div class="status-label">Aktualni stav</div>
-          <div class="status-val" id="t-status">...</div>
+          <div class="status-label">Aktuální stav</div>
+          <div class="status-val" id="t-status">…</div>
         </div>
       </div>
       <div>
-        <div class="status-label">Pristi zastavka</div>
+        <div class="status-label">Příští zastávka</div>
         <div class="status-val" id="t-next">—</div>
       </div>
+    </div>
+    <div class="tracker-meta" id="t-meta" hidden>
+      <div class="meta-item"><span class="meta-label">Příjezd v</span><span class="meta-val" id="t-eta-time">—</span></div>
+      <div class="meta-item"><span class="meta-label">Vzdálenost</span><span class="meta-val" id="t-dist">—</span></div>
+      <div class="meta-item"><span class="meta-label">Z celkem</span><span class="meta-val" id="t-pct">—</span></div>
     </div>
     <div class="stop-list" id="stop-list"></div>
   `;
   buildMap(journey);
+  // delegated click on stop list → zoom map
+  document.getElementById('stop-list').addEventListener('click', e => {
+    const item = e.target.closest('.stop-item');
+    if (!item) return;
+    const idx = parseInt(item.getAttribute('data-idx'), 10);
+    const s = journey.stops[idx];
+    if (s && map) {
+      map.flyTo([s.lat, s.lng], 11, { duration: 0.8 });
+    }
+  });
+}
+
+function fmtTimeFromMin(min) {
+  const h = Math.floor(min / 60) % 24;
+  const m = Math.floor(min % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
 }
 
 function updateTracker(journey) {
@@ -669,27 +1271,43 @@ function updateTracker(journey) {
 
   const statusEl = document.getElementById('t-status');
   const nextEl   = document.getElementById('t-next');
+  const metaEl   = document.getElementById('t-meta');
+  const etaTimeEl = document.getElementById('t-eta-time');
+  const distEl   = document.getElementById('t-dist');
+  const pctEl    = document.getElementById('t-pct');
 
   if (state.phase === 'before') {
     const h = Math.floor(state.minutesUntil / 60), m = Math.round(state.minutesUntil % 60);
     statusEl.textContent = `Odjezd za ${h > 0 ? h+'h ' : ''}${m}min`;
-    nextEl.textContent = stops[0].name;
+    nextEl.textContent = `${stops[0].name} · ${stops[0].depart}`;
+    metaEl.hidden = true;
   } else if (state.phase === 'at_station') {
     statusEl.textContent = `Na stanici: ${state.stop.name}`;
     const dep = Math.round(state.departsIn);
     nextEl.textContent = state.nextStop
-      ? `${state.nextStop.name}${dep > 0 ? ` (za ${dep}min)` : ''}`
+      ? `${state.nextStop.name}${dep > 0 ? ` (odjezd za ${dep} min)` : ''}`
       : '—';
     trainMarker.setLatLng([state.lat, state.lng]);
+    metaEl.hidden = false;
+    etaTimeEl.textContent = state.nextStop && state.nextStop.arrive ? state.nextStop.arrive : '—';
+    distEl.textContent = state.nextStop ? haversineKm(state.lat, state.lng, state.nextStop.lat, state.nextStop.lng).toFixed(1) + ' km' : '—';
+    pctEl.textContent = Math.round(pct) + '%';
   } else if (state.phase === 'moving') {
     statusEl.textContent = `${state.fromStop.name} → ${state.toStop.name}`;
-    nextEl.textContent = `${state.toStop.name} (~${Math.round(state.etaMin)} min)`;
+    const eta = Math.round(state.etaMin);
+    const arriveAtMin = min + state.etaMin;
+    nextEl.textContent = `${state.toStop.name} · ${fmtTimeFromMin(arriveAtMin)} (za ${eta} min)`;
     trainMarker.setLatLng([state.lat, state.lng]);
     map.panTo([state.lat, state.lng], { animate: true, duration: 1 });
+    metaEl.hidden = false;
+    etaTimeEl.textContent = fmtTimeFromMin(arriveAtMin);
+    distEl.textContent = haversineKm(state.lat, state.lng, state.toStop.lat, state.toStop.lng).toFixed(1) + ' km';
+    pctEl.textContent = Math.round(pct) + '%';
   } else {
     statusEl.textContent = 'Dorazili!';
     nextEl.textContent = stops[stops.length - 1].name;
     document.getElementById('pf').style.width = '100%';
+    metaEl.hidden = true;
   }
 
   // stop list
@@ -707,13 +1325,106 @@ function updateTracker(journey) {
     }
     const time = [s.arrive, s.depart].filter(Boolean).join('–');
     const badge = cls === 'passed' ? '&#10003;' : i + 1;
-    html += `<div class="stop-item ${cls}">
+    html += `<div class="stop-item ${cls}" data-idx="${i}" title="Klikni pro zoom na mapě">
       <div class="stop-dot">${badge}</div>
       <span class="stop-name">${s.name}</span>
       <span class="stop-time">${time}</span>
     </div>`;
   });
   document.getElementById('stop-list').innerHTML = html;
+}
+
+// ── PROGRAM (for "now" card) ─────────────────────────────────────
+const TRIP_START = new Date('2026-05-31T08:31:00');
+const TRIP_END   = new Date('2026-06-02T23:31:00');
+
+const PROGRAM = [
+  // Day 1 — 2026-05-31
+  { date: '2026-05-31', time: '08:31', desc: 'Odjezd z Prahy hl.n.' },
+  { date: '2026-05-31', time: '12:30', desc: 'Příjezd Berlin Hbf, uložení zavazadel v hotelu' },
+  { date: '2026-05-31', time: '13:00', desc: 'Oběd u Unter den Linden (vlastní náklady)' },
+  { date: '2026-05-31', time: '14:00', desc: 'Komentovaná procházka: Alexanderplatz → Brandenburg Tor → Reichstag' },
+  { date: '2026-05-31', time: '17:00', desc: 'Odpolední rozchod — nákupy' },
+  { date: '2026-05-31', time: '19:00', desc: 'Večeře v místní restauraci' },
+  { date: '2026-05-31', time: '20:30', desc: 'Volitelně: Berlínská státní opera — Verdi: Nabucco' },
+  // Day 2 — 2026-06-01
+  { date: '2026-06-01', time: '07:30', desc: 'Snídaně v hotelu' },
+  { date: '2026-06-01', time: '09:00', desc: 'Ostbahnhof — East Side Gallery' },
+  { date: '2026-06-01', time: '11:00', desc: 'Procházka Kreuzbergem → Checkpoint Charlie' },
+  { date: '2026-06-01', time: '13:00', desc: 'Oběd v okolí Checkpoint Charlie' },
+  { date: '2026-06-01', time: '14:30', desc: 'Berlínská muzea — Židovské, Berlínská galerie, Kinemathek, Špionáže' },
+  { date: '2026-06-01', time: '19:00', desc: 'Společná večeře — Potsdamer Platz' },
+  // Day 3 — 2026-06-02
+  { date: '2026-06-02', time: '07:30', desc: 'Snídaně v hotelu, checkout (zavazadla uložena)' },
+  { date: '2026-06-02', time: '10:00', desc: 'Museum Insel — Berliner Dom' },
+  { date: '2026-06-02', time: '10:30', desc: 'Deutsches Historisches Museum (Altes, Neues)' },
+  { date: '2026-06-02', time: '13:00', desc: 'Oběd v okolí Museum Insel' },
+  { date: '2026-06-02', time: '14:00', desc: 'Rozchod — suvenýry, vlastní večeře / svačina na cestu' },
+  { date: '2026-06-02', time: '18:30', desc: 'Vyzvednutí zavazadel, přesun na Berlin Hbf' },
+  { date: '2026-06-02', time: '19:28', desc: 'Odjezd z Berlin Hbf zpět do Prahy' },
+  { date: '2026-06-02', time: '23:31', desc: 'Příjezd Praha hl.n.' },
+];
+
+function eventDateTime(ev) {
+  return new Date(`${ev.date}T${ev.time}:00`);
+}
+
+function findCurrentNext(now) {
+  let current = null, next = null;
+  for (let i = 0; i < PROGRAM.length; i++) {
+    const evTime = eventDateTime(PROGRAM[i]);
+    if (evTime <= now) {
+      current = PROGRAM[i];
+    } else {
+      next = PROGRAM[i];
+      break;
+    }
+  }
+  return { current, next };
+}
+
+function updateHeroCountdown() {
+  const el = document.getElementById('hero-countdown');
+  const label = document.getElementById('cd-label');
+  const val = document.getElementById('cd-value');
+  const now = new Date();
+
+  if (now < TRIP_START) {
+    el.hidden = false;
+    label.textContent = 'Výlet začíná za';
+    val.textContent = fmtCountdown(TRIP_START - now);
+  } else if (now >= TRIP_START && now <= TRIP_END) {
+    el.hidden = false;
+    const today = todayStr();
+    const dayN = today === '2026-05-31' ? 1 : today === '2026-06-01' ? 2 : today === '2026-06-02' ? 3 : null;
+    label.textContent = 'Aktuálně';
+    val.textContent = dayN ? `Den ${dayN} z 3` : 'Výlet probíhá';
+  } else {
+    el.hidden = true;
+  }
+}
+
+function updateNowCard() {
+  const el = document.getElementById('now-section');
+  const now = new Date();
+  if (now < TRIP_START || now > TRIP_END) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const { current, next } = findCurrentNext(now);
+  document.getElementById('now-current').textContent = current
+    ? `${current.time} · ${current.desc}`
+    : 'Čekáme na první událost dne';
+  const nextEl = document.getElementById('now-next');
+  if (next) {
+    const evTime = eventDateTime(next);
+    const mins = Math.round((evTime - now) / 60000);
+    const inText = mins < 60 ? `za ${mins} min` : `v ${next.time}`;
+    nextEl.textContent = `${next.desc} (${inText})`;
+  } else {
+    nextEl.textContent = 'Žádné další události dnes';
+  }
 }
 
 // ── INIT ──────────────────────────────────────────────────────────
@@ -731,8 +1442,8 @@ function init() {
     if (now > end) {
       document.getElementById('tracker-inner').innerHTML = `
         <div class="tracker-inactive">
-          <div class="countdown-big">Vylet skoncil</div>
-          <div>Doufame, ze si Berlin uzili!</div>
+          <div class="countdown-big">Výlet skončil</div>
+          <div>Doufáme, že si Berlín užili!</div>
         </div>`;
     } else {
       const cd = fmtCountdown(dep - now);
@@ -757,7 +1468,542 @@ function init() {
   setInterval(() => updateTracker(journey), 30000);
 }
 
-init();
+// ── SERVICE WORKER (PWA) ─────────────────────────────────────────
+function initSW() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.protocol !== 'file:') return;
+  // Note: file:// neumí SW, ale registraci necháme — silently fail
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// ── THEME TOGGLE ─────────────────────────────────────────────────
+function applyTheme(theme) {
+  document.body.classList.toggle('light', theme === 'light');
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = theme === 'light' ? '☀' : '☾';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', theme === 'light' ? '#f7f8fc' : '#0f1117');
+}
+function initTheme() {
+  let theme = localStorage.getItem('berlin2026-theme');
+  if (!theme) theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  applyTheme(theme);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.addEventListener('click', () => {
+    const cur = document.body.classList.contains('light') ? 'light' : 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem('berlin2026-theme', next);
+  });
+}
+
+// ── CHECKLIST ────────────────────────────────────────────────────
+const CHECKLIST_DEFAULTS = [
+  'Občanský průkaz / cestovní pas',
+  'Karta zdravotní pojišťovny (EHIC)',
+  'Eura (kapesné)',
+  'Platební karta',
+  'Mobil + nabíječka',
+  'Powerbanka',
+  'Adaptér (DE = stejné zásuvky)',
+  'Lehká bunda / mikina',
+  'Nepromokavá bunda',
+  'Pohodlné boty na chůzi',
+  'Pyžamo, ponožky, prádlo',
+  'Hygienické potřeby',
+  'Léky (pokud bereš)',
+  'Lahev na vodu',
+  'Svačina na vlak',
+  'Sluchátka / čtečka / kniha',
+  'Fotoaparát (volitelně)',
+  'Tablety / učebnice (volitelně)',
+];
+const CHECKLIST_KEY = 'berlin2026-checklist';
+
+function loadChecklistState() {
+  try { return JSON.parse(localStorage.getItem(CHECKLIST_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveChecklistState(state) {
+  localStorage.setItem(CHECKLIST_KEY, JSON.stringify(state));
+}
+function renderChecklist() {
+  const grid = document.getElementById('checklist-grid');
+  if (!grid) return;
+  const state = loadChecklistState();
+  grid.innerHTML = CHECKLIST_DEFAULTS.map((item, i) => `
+    <label class="checklist-item ${state[i] ? 'checked' : ''}">
+      <input type="checkbox" data-idx="${i}" ${state[i] ? 'checked' : ''}>
+      <span>${item}</span>
+    </label>
+  `).join('');
+  document.getElementById('checklist-total').textContent = CHECKLIST_DEFAULTS.length;
+  updateChecklistProgress();
+}
+function updateChecklistProgress() {
+  const state = loadChecklistState();
+  const checked = CHECKLIST_DEFAULTS.filter((_, i) => state[i]).length;
+  document.getElementById('checklist-count').textContent = checked;
+  document.getElementById('checklist-pf').style.width =
+    (checked / CHECKLIST_DEFAULTS.length * 100) + '%';
+}
+function initChecklist() {
+  renderChecklist();
+  const grid = document.getElementById('checklist-grid');
+  if (!grid) return;
+  grid.addEventListener('change', e => {
+    if (e.target.tagName !== 'INPUT') return;
+    const idx = parseInt(e.target.getAttribute('data-idx'), 10);
+    const state = loadChecklistState();
+    if (e.target.checked) state[idx] = true; else delete state[idx];
+    saveChecklistState(state);
+    e.target.closest('.checklist-item').classList.toggle('checked', e.target.checked);
+    updateChecklistProgress();
+  });
+  const reset = document.getElementById('checklist-reset');
+  if (reset) reset.addEventListener('click', () => {
+    if (!confirm('Smazat všechny zaškrtnuté položky?')) return;
+    localStorage.removeItem(CHECKLIST_KEY);
+    renderChecklist();
+    toast('Checklist resetován');
+  });
+}
+
+// ── NĚMČINA ──────────────────────────────────────────────────────
+const PHRASES = [
+  { title: 'Pozdravy & základ', list: [
+    ['Dobrý den', 'Guten Tag'],
+    ['Dobré ráno', 'Guten Morgen'],
+    ['Na shledanou', 'Auf Wiedersehen'],
+    ['Ahoj', 'Hallo / Tschüss'],
+    ['Ano / Ne', 'Ja / Nein'],
+    ['Prosím', 'Bitte'],
+    ['Děkuji', 'Danke'],
+    ['Promiňte', 'Entschuldigung'],
+    ['Nerozumím', 'Ich verstehe nicht'],
+    ['Mluvíte anglicky?', 'Sprechen Sie Englisch?'],
+  ]},
+  { title: 'Otázky', list: [
+    ['Kde je…?', 'Wo ist…?'],
+    ['Kolik to stojí?', 'Was kostet das?'],
+    ['Účet, prosím', 'Die Rechnung, bitte'],
+    ['Kde je záchod?', 'Wo ist die Toilette?'],
+    ['Pomoc!', 'Hilfe!'],
+    ['Volejte policii', 'Rufen Sie die Polizei'],
+    ['Potřebuji lékaře', 'Ich brauche einen Arzt'],
+  ]},
+  { title: 'Doprava & město', list: [
+    ['Jízdenka', 'Fahrkarte'],
+    ['Vlak / nádraží', 'Zug / Bahnhof'],
+    ['Metro (U-Bahn)', 'U-Bahn'],
+    ['Příští zastávka', 'Nächste Haltestelle'],
+    ['Vchod / Východ', 'Eingang / Ausgang'],
+    ['Otevřeno / Zavřeno', 'Geöffnet / Geschlossen'],
+  ]},
+  { title: 'Jídlo & pití', list: [
+    ['Voda', 'Wasser'],
+    ['Káva / Čaj', 'Kaffee / Tee'],
+    ['Chléb', 'Brot'],
+    ['Pivo (nealko)', 'Bier (alkoholfrei)'],
+    ['Bez masa', 'Ohne Fleisch'],
+    ['Můžu platit kartou?', 'Kann ich mit Karte zahlen?'],
+  ]},
+  { title: 'Čísla', list: [
+    ['1 / 2 / 3', 'eins / zwei / drei'],
+    ['4 / 5 / 6', 'vier / fünf / sechs'],
+    ['7 / 8 / 9 / 10', 'sieben / acht / neun / zehn'],
+    ['20 / 50 / 100', 'zwanzig / fünfzig / hundert'],
+  ]},
+];
+
+function renderPhrases() {
+  const grid = document.getElementById('phrases-grid');
+  if (!grid) return;
+  grid.innerHTML = PHRASES.map(g => `
+    <div class="phrase-group">
+      <div class="phrase-group-title">${g.title}</div>
+      ${g.list.map(([cs, de]) => `
+        <div class="phrase-row">
+          <span class="phrase-cs">${cs}</span>
+          <span class="phrase-de">${de}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+// ── QR CODE ──────────────────────────────────────────────────────
+function renderQR() {
+  const img = document.getElementById('qr-img');
+  if (!img) return;
+  const url = encodeURIComponent(window.location.href.replace(/#.*$/, ''));
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data=${url}`;
+}
+
+// ── HAMBURGER ────────────────────────────────────────────────────
+function initHamburger() {
+  const btn = document.getElementById('hamburger');
+  const links = document.getElementById('nav-links');
+  if (!btn || !links) return;
+  btn.addEventListener('click', () => {
+    const open = links.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  links.addEventListener('click', e => {
+    if (e.target.tagName === 'A') {
+      links.classList.remove('open');
+      btn.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+// ── ATTRACTIONS DATA ─────────────────────────────────────────────
+const ATTRACTIONS = {
+  hotel: { name: 'A&O Hotel Berlin Hbf', lat: 52.5286, lng: 13.3681 },
+  day1: [
+    { name: 'Brandenburger Tor',      lat: 52.5163, lng: 13.3777 },
+    { name: 'Reichstag',              lat: 52.5186, lng: 13.3762 },
+    { name: 'Unter den Linden',       lat: 52.5170, lng: 13.3884 },
+    { name: 'Alexanderplatz',         lat: 52.5219, lng: 13.4132 },
+    { name: 'Berliner Staatsoper',    lat: 52.5172, lng: 13.3953 },
+  ],
+  day2: [
+    { name: 'Ostbahnhof',             lat: 52.5104, lng: 13.4347 },
+    { name: 'East Side Gallery',      lat: 52.5052, lng: 13.4400 },
+    { name: 'Kreuzberg',              lat: 52.4985, lng: 13.4031 },
+    { name: 'Checkpoint Charlie',     lat: 52.5076, lng: 13.3904 },
+    { name: 'Jüdisches Museum',       lat: 52.5024, lng: 13.3953 },
+    { name: 'Berlinische Galerie',    lat: 52.5039, lng: 13.3963 },
+    { name: 'Deutsche Kinemathek',    lat: 52.5096, lng: 13.3744 },
+    { name: 'Potsdamer Platz',        lat: 52.5096, lng: 13.3759 },
+  ],
+  day3: [
+    { name: 'Berliner Dom',           lat: 52.5191, lng: 13.4011 },
+    { name: 'Museum Insel',           lat: 52.5208, lng: 13.3964 },
+    { name: 'Altes Museum',           lat: 52.5193, lng: 13.3987 },
+    { name: 'Neues Museum',           lat: 52.5205, lng: 13.3983 },
+    { name: 'Dt. Historisches Museum',lat: 52.5174, lng: 13.3978 },
+  ],
+};
+
+function divIconColor(color, size = 14) {
+  return L.divIcon({
+    html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:3px solid #0f1117;box-shadow:0 0 6px ${color}"></div>`,
+    className: '', iconAnchor: [size/2 + 1.5, size/2 + 1.5]
+  });
+}
+
+function initAttractionsMap() {
+  const el = document.getElementById('attractions-map');
+  if (!el) return;
+  const map = L.map('attractions-map', { attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
+
+  const all = [];
+  function add(list, color, label) {
+    list.forEach(p => {
+      L.marker([p.lat, p.lng], { icon: divIconColor(color) })
+        .bindPopup(`<strong>${p.name}</strong><br>${label}`).addTo(map);
+      all.push([p.lat, p.lng]);
+    });
+  }
+  add(ATTRACTIONS.day1, '#f5d020', 'Den 1 · neděle');
+  add(ATTRACTIONS.day2, '#3b82f6', 'Den 2 · pondělí');
+  add(ATTRACTIONS.day3, '#22c55e', 'Den 3 · úterý');
+
+  const h = ATTRACTIONS.hotel;
+  L.marker([h.lat, h.lng], { icon: divIconColor('#ef4444', 18) })
+    .bindPopup(`<strong>${h.name}</strong><br>Lehrter Str. 12, 10557 Berlin`)
+    .addTo(map);
+  all.push([h.lat, h.lng]);
+
+  map.fitBounds(L.latLngBounds(all), { padding: [40, 40] });
+}
+
+// ── HOTEL MINI-MAP ──────────────────────────────────────────────
+function initHotelMap() {
+  const el = document.getElementById('hotel-map');
+  if (!el) return;
+  const map = L.map('hotel-map', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
+
+  const hotel = [ATTRACTIONS.hotel.lat, ATTRACTIONS.hotel.lng];
+  const hbf = [52.5251, 13.3693];
+
+  L.polyline([hotel, hbf], { color: '#f5d020', weight: 3, opacity: 0.7, dashArray: '6 6' }).addTo(map);
+
+  L.marker(hotel, { icon: divIconColor('#ef4444', 18) })
+    .bindTooltip('A&O Hotel', { permanent: true, direction: 'top', offset: [0, -10] }).addTo(map);
+
+  L.marker(hbf, { icon: divIconColor('#f5d020', 14) })
+    .bindTooltip('Berlin Hbf', { permanent: true, direction: 'bottom', offset: [0, 10] }).addTo(map);
+
+  map.fitBounds([hotel, hbf], { padding: [50, 50] });
+}
+
+// ── WEATHER ──────────────────────────────────────────────────────
+function weatherCodeText(code) {
+  if (code === 0) return 'Jasno';
+  if (code === 1) return 'Skoro jasno';
+  if (code === 2) return 'Polojasno';
+  if (code === 3) return 'Zataženo';
+  if (code >= 45 && code <= 48) return 'Mlha';
+  if (code >= 51 && code <= 57) return 'Mrholení';
+  if (code >= 61 && code <= 67) return 'Déšť';
+  if (code >= 71 && code <= 77) return 'Sníh';
+  if (code >= 80 && code <= 82) return 'Přeháňky';
+  if (code >= 95 && code <= 99) return 'Bouřka';
+  return 'Proměnlivo';
+}
+
+async function loadWeather() {
+  const grid = document.getElementById('weather-grid');
+  if (!grid) return;
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41'
+    + '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+    + '&timezone=Europe%2FBerlin&start_date=2026-05-31&end_date=2026-06-02';
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('http');
+    const d = await r.json();
+    if (!d.daily || !d.daily.time) throw new Error('no data');
+    const days = ['Neděle 31. 5.', 'Pondělí 1. 6.', 'Úterý 2. 6.'];
+    grid.innerHTML = d.daily.time.map((t, i) => `
+      <div class="weather-card">
+        <div class="weather-day">${days[i] || t}</div>
+        <div class="weather-temp">${Math.round(d.daily.temperature_2m_max[i])}°<span class="min">/ ${Math.round(d.daily.temperature_2m_min[i])}°</span></div>
+        <div class="weather-desc">${weatherCodeText(d.daily.weather_code[i])}</div>
+        <div class="weather-extra">Srážky: ${d.daily.precipitation_probability_max[i] ?? '—'}%</div>
+      </div>
+    `).join('');
+  } catch (e) {
+    grid.innerHTML = `<div class="weather-card"><div class="weather-day">Počasí nedostupné</div><div class="weather-extra">Předpověď bude dostupná blíž k termínu</div></div>`;
+  }
+}
+
+// ── GALLERY ──────────────────────────────────────────────────────
+const GALLERY = [
+  { day: 1, label: 'Brandenburger Tor',  seed: 'brandenburg-gate' },
+  { day: 1, label: 'Reichstag',          seed: 'reichstag-berlin' },
+  { day: 1, label: 'Alexanderplatz',     seed: 'alexanderplatz' },
+  { day: 1, label: 'Unter den Linden',   seed: 'berlin-unterdenlinden' },
+  { day: 2, label: 'East Side Gallery',  seed: 'eastsidegallery' },
+  { day: 2, label: 'Checkpoint Charlie', seed: 'checkpoint-charlie' },
+  { day: 2, label: 'Potsdamer Platz',    seed: 'potsdamerplatz' },
+  { day: 3, label: 'Berliner Dom',       seed: 'berliner-dom' },
+  { day: 3, label: 'Museum Insel',       seed: 'museumsinsel' },
+];
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  if (!grid) return;
+  grid.innerHTML = GALLERY.map(g => `
+    <div class="gallery-item">
+      <img src="https://picsum.photos/seed/${g.seed}/400/400" alt="${g.label}" loading="lazy" decoding="async">
+      <div class="gallery-day">Den ${g.day}</div>
+      <div class="gallery-caption">${g.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── HAVERSINE ────────────────────────────────────────────────────
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat/2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng/2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// ── TOAST ────────────────────────────────────────────────────────
+function toast(msg, ms = 2200) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('show'), ms);
+}
+
+// ── CURRENCY CALCULATOR ──────────────────────────────────────────
+const CALC_FALLBACK_RATE = 25.0; // CZK per 1 EUR
+let calcRate = CALC_FALLBACK_RATE;
+let calcSource = 'offline kurz';
+
+function fmtRate(r) { return r.toFixed(2) + ' Kč / €'; }
+
+async function loadCurrencyRate() {
+  const rateEl = document.getElementById('calc-rate-val');
+  const srcEl = document.getElementById('calc-rate-source');
+  try {
+    const r = await fetch('https://api.frankfurter.app/latest?from=EUR&to=CZK', { cache: 'default' });
+    if (!r.ok) throw new Error('http');
+    const d = await r.json();
+    if (d.rates && d.rates.CZK) {
+      calcRate = d.rates.CZK;
+      calcSource = `frankfurter.app · ${d.date}`;
+      rateEl.textContent = fmtRate(calcRate);
+      srcEl.innerHTML = `zdroj: <a href="https://www.frankfurter.app/" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none">frankfurter.app</a> · ${d.date}`;
+      recalcCurrency('czk');
+    }
+  } catch (e) {
+    rateEl.textContent = fmtRate(calcRate) + ' (offline)';
+  }
+}
+
+function recalcCurrency(from) {
+  const czkEl = document.getElementById('calc-czk');
+  const eurEl = document.getElementById('calc-eur');
+  if (from === 'czk') {
+    const v = parseFloat(czkEl.value);
+    eurEl.value = isFinite(v) && v > 0 ? (v / calcRate).toFixed(2) : '';
+  } else {
+    const v = parseFloat(eurEl.value);
+    czkEl.value = isFinite(v) && v > 0 ? (v * calcRate).toFixed(0) : '';
+  }
+}
+
+function initCalculator() {
+  document.getElementById('calc-rate-val').textContent = fmtRate(calcRate);
+  document.getElementById('calc-czk').addEventListener('input', () => recalcCurrency('czk'));
+  document.getElementById('calc-eur').addEventListener('input', () => recalcCurrency('eur'));
+  loadCurrencyRate();
+}
+
+// ── SHARE ────────────────────────────────────────────────────────
+async function shareLink() {
+  const url = window.location.href;
+  const title = 'Školní výlet Berlín 2026 — ACGA';
+  const text = 'Program, vlakový tracker a kontakty pro výlet do Berlína.';
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Odkaz zkopírován do schránky');
+  } catch (e) {
+    toast('Sdílení nepodporováno', 1800);
+  }
+}
+
+function initShare() {
+  const btn = document.getElementById('share-btn');
+  if (btn) btn.addEventListener('click', shareLink);
+}
+
+// ── NAV ACTIVE HIGHLIGHT ─────────────────────────────────────────
+function initNavHighlight() {
+  const links = Array.from(document.querySelectorAll('.nav-links a'));
+  const map = {};
+  links.forEach(a => {
+    const id = a.getAttribute('href').slice(1);
+    map[id] = a;
+  });
+  const sections = Object.keys(map).map(id => document.getElementById(id)).filter(Boolean);
+  if (!('IntersectionObserver' in window)) return;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = map[en.target.id];
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+  sections.forEach(s => obs.observe(s));
+}
+
+// ── ADD TO CALENDAR (.ics) ───────────────────────────────────────
+function pad(n) { return String(n).padStart(2, '0'); }
+function icsDate(d) {
+  return `${d.getUTCFullYear()}${pad(d.getUTCMonth()+1)}${pad(d.getUTCDate())}T${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}00Z`;
+}
+function buildIcs() {
+  const events = [
+    { start: '2026-05-31T08:31:00+02:00', end: '2026-05-31T23:00:00+02:00',
+      title: 'Berlín 2026 — Den 1: Příjezd & Centrum',
+      desc: 'Odjezd Praha hl.n. 08:31 → Berlin Hbf 12:30. Alexanderplatz → Brandenburg Tor → Reichstag. Večeře, volitelně opera Nabucco.',
+      loc: 'A&O Hotel Berlin Hauptbahnhof, Lehrter Str. 12, 10557 Berlin' },
+    { start: '2026-06-01T07:30:00+02:00', end: '2026-06-01T23:00:00+02:00',
+      title: 'Berlín 2026 — Den 2: Zeď & Muzea',
+      desc: 'East Side Gallery, Kreuzberg, Checkpoint Charlie. Berlínská muzea (vstup zdarma). Večeře Potsdamer Platz.',
+      loc: 'Berlin, Německo' },
+    { start: '2026-06-02T07:30:00+02:00', end: '2026-06-02T23:31:00+02:00',
+      title: 'Berlín 2026 — Den 3: Museum Insel & Odjezd',
+      desc: 'Berliner Dom, Deutsches Historisches Museum. Odjezd Berlin Hbf 19:28 → Praha hl.n. 23:31.',
+      loc: 'Berlin → Praha' },
+  ];
+  const now = icsDate(new Date());
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//ACGA//Berlin 2026//CS',
+    'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+  ];
+  events.forEach((ev, i) => {
+    lines.push(
+      'BEGIN:VEVENT',
+      `UID:berlin2026-day${i+1}@acga.cz`,
+      `DTSTAMP:${now}`,
+      `DTSTART:${icsDate(new Date(ev.start))}`,
+      `DTEND:${icsDate(new Date(ev.end))}`,
+      `SUMMARY:${ev.title}`,
+      `DESCRIPTION:${ev.desc.replace(/\n/g, '\\n')}`,
+      `LOCATION:${ev.loc}`,
+      'END:VEVENT'
+    );
+  });
+  lines.push('END:VCALENDAR');
+  return lines.join('\r\n');
+}
+function downloadIcs() {
+  const ics = buildIcs();
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'berlin2026.ics';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('Stahuji berlin2026.ics');
+}
+function initIcs() {
+  const btn = document.getElementById('ics-btn');
+  if (btn) btn.addEventListener('click', downloadIcs);
+}
+
+// ── INIT ALL ─────────────────────────────────────────────────────
+function initAll() {
+  initSW();
+  initTheme();
+  init();
+  updateHeroCountdown();
+  updateNowCard();
+  initCalculator();
+  initShare();
+  initNavHighlight();
+  initIcs();
+  initHamburger();
+  initAttractionsMap();
+  initHotelMap();
+  loadWeather();
+  renderGallery();
+  initChecklist();
+  renderPhrases();
+  renderQR();
+  setInterval(() => {
+    updateHeroCountdown();
+    updateNowCard();
+  }, 30000);
+}
+
+initAll();
 </script>
 </body>
 </html>
