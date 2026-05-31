@@ -1,4 +1,4 @@
-const CACHE = 'berlin2026-v5';
+const CACHE = 'berlin2026-v7';
 const PRECACHE = [
   './',
   './index.html',

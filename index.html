@@ -393,6 +393,74 @@
       border-top: 1px solid var(--border);
     }
 
+    /* collapsible sections via <details> */
+    .section > details { width: 100%; }
+    .section > details > summary {
+      list-style: none; cursor: pointer;
+      user-select: none;
+      display: flex; align-items: center; gap: .75rem;
+      margin-bottom: 0;
+      padding-right: 2rem;
+      position: relative;
+    }
+    .section > details > summary::-webkit-details-marker { display: none; }
+    .section > details > summary::marker { content: ''; }
+    .section > details > summary::after {
+      content: '';
+      position: absolute; right: 0; top: 50%;
+      width: 12px; height: 12px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: translateY(-75%) rotate(45deg);
+      transition: transform .2s, border-color .15s;
+    }
+    .section > details[open] > summary::after {
+      transform: translateY(-25%) rotate(-135deg);
+      border-color: var(--gold);
+    }
+    .section > details > summary:hover::after { border-color: var(--gold); }
+    .section > details > summary {
+      transition: margin-bottom .2s;
+    }
+    .section > details[open] > summary {
+      margin-bottom: 1.5rem;
+    }
+    /* nested details (subsections inside a section) keep their own behavior */
+    .section > details > * + * { margin-top: 0; }
+    .section > details summary.section-title::after {
+      flex: none;
+    }
+
+    /* expand-all button */
+    .expand-all-btn {
+      background: transparent; color: var(--muted);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: .35rem .75rem; font-size: .78rem; font-weight: 500;
+      cursor: pointer; font-family: inherit;
+      transition: color .15s, border-color .15s;
+    }
+    .expand-all-btn:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* hotel gallery */
+    .hotel-gallery {
+      margin-top: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: .5rem;
+    }
+    .hotel-photo {
+      aspect-ratio: 4/3;
+      border-radius: 8px; overflow: hidden;
+      background: var(--surface);
+      cursor: pointer;
+      transition: transform .2s;
+    }
+    .hotel-photo:hover { transform: scale(1.03); }
+    .hotel-photo img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+
     /* edu — timeline + facts */
     .timeline {
       position: relative;
@@ -706,6 +774,10 @@
     /* print */
     @media print {
       body { background: #fff; color: #000; }
+      /* Force all collapsed sections open for printing */
+      details { display: block !important; }
+      details > summary::after { display: none !important; }
+      details > *:not(summary) { display: revert !important; }
       nav, .hero-countdown, .now-section, .train-services,
       #tracker-box, #attractions-map, #hotel-map, #meeting-map, .map-legend,
       .gallery-grid, .calc-box, #share-btn, #hamburger, .ics-btn,
@@ -883,6 +955,7 @@
     <li><a href="#qrcode">QR</a></li>
   </ul>
   <div style="display:flex; gap:.5rem; align-items:center;">
+    <button id="expand-all-btn" class="expand-all-btn" type="button" aria-label="Rozbalit / sbalit vše" title="Rozbalit / sbalit všechny sekce">Rozbalit vše</button>
     <button id="theme-btn" class="theme-btn" type="button" aria-label="Přepnout světlý/tmavý režim" title="Přepnout režim">☾</button>
     <button id="share-btn" class="share-btn" type="button" aria-label="Sdílet stránku">Sdílet</button>
     <button id="hamburger" class="hamburger" type="button" aria-label="Menu" aria-expanded="false">
@@ -926,8 +999,8 @@
 </section>
 
 <!-- INFORMACE -->
-<section class="section" id="info">
-  <h2 class="section-title">Informace</h2>
+<section class="section" id="info"><details><summary class="section-title">Informace</summary>
+  
   <div class="info-grid">
     <div class="info-card">
       <div class="info-label">Místo</div>
@@ -967,11 +1040,11 @@
     </div>
   </div>
   <button class="ics-btn" id="ics-btn" type="button">Přidat výlet do kalendáře (.ics)</button>
-</section>
+</details></section>
 
 <!-- VLAK -->
-<section class="section" id="vlak">
-  <h2 class="section-title">Vlakový tracker</h2>
+<section class="section" id="vlak"><details open><summary class="section-title">Vlakový tracker</summary>
+  
 
   <div class="train-services">
     <div class="train-service-chip">WiFi</div>
@@ -989,19 +1062,19 @@
       <div class="tracker-inactive">Načítám...</div>
     </div>
   </div>
-</section>
+</details></section>
 
 <!-- POČASÍ -->
-<section class="section" id="pocasi">
-  <h2 class="section-title">Počasí v Berlíně</h2>
+<section class="section" id="pocasi"><details><summary class="section-title">Počasí v Berlíně</summary>
+  
   <div class="weather-grid" id="weather-grid">
     <div class="weather-card"><div class="weather-day">Načítám…</div></div>
   </div>
-</section>
+</details></section>
 
 <!-- PROGRAM -->
-<section class="section" id="program">
-  <h2 class="section-title">Program</h2>
+<section class="section" id="program"><details><summary class="section-title">Program</summary>
+  
   <div class="days">
 
     <div class="day-card">
@@ -1148,11 +1221,11 @@
     </div>
 
   </div>
-</section>
+</details></section>
 
 <!-- BERLÍN V KOSTCE (edukace) -->
-<section class="section" id="edu">
-  <h2 class="section-title">Berlín v kostce</h2>
+<section class="section" id="edu"><details><summary class="section-title">Berlín v kostce</summary>
+  
   <div style="color:var(--muted); font-size:.88rem; margin-bottom:1.25rem">
     Krátký kontext k místům, která navštívíme.
   </div>
@@ -1220,11 +1293,11 @@
       <div class="fact-desc">Plochy města tvoří zeleň a voda.</div>
     </div>
   </div>
-</section>
+</details></section>
 
 <!-- MAPA ATRAKCÍ -->
-<section class="section" id="mapa">
-  <h2 class="section-title">Mapa atrakcí</h2>
+<section class="section" id="mapa"><details><summary class="section-title">Mapa atrakcí</summary>
+  
   <div class="map-legend">
     <div class="legend-chip"><span class="legend-dot" style="background:#f5d020"></span>Den 1 (neděle)</div>
     <div class="legend-chip"><span class="legend-dot" style="background:#3b82f6"></span>Den 2 (pondělí)</div>
@@ -1232,11 +1305,11 @@
     <div class="legend-chip"><span class="legend-dot" style="background:#ef4444"></span>Hotel</div>
   </div>
   <div id="attractions-map"></div>
-</section>
+</details></section>
 
 <!-- HOTEL -->
-<section class="section" id="hotel">
-  <h2 class="section-title">Hotel</h2>
+<section class="section" id="hotel"><details open><summary class="section-title">Hotel</summary>
+  
   <div class="hotel-grid">
     <div class="hotel-card">
       <div class="info-label" style="margin-bottom:.4rem">Název</div>
@@ -1262,11 +1335,13 @@
       Z Berlin Hbf cca <strong style="color:var(--text)">5 min pěšky</strong> · Lehrter Str. 12, 10557 Berlin
     </div>
   </div>
-</section>
+  <h3 class="subsection-title">Jak hotel vypadá</h3>
+  <div class="hotel-gallery" id="hotel-gallery"></div>
+</details></section>
 
 <!-- PRAKTICKÉ INFO (4 subsekce) -->
-<section class="section" id="praktickeinfo">
-  <h2 class="section-title">Praktické info</h2>
+<section class="section" id="praktickeinfo"><details><summary class="section-title">Praktické info</summary>
+  
 
   <h3 class="subsection-title">Otevírací doby muzeí a atrakcí</h3>
   <div class="disclaimer">Hodiny orientačně k 31. 5. 2026 — pro jistotu ověřte přímo na webu instituce před návštěvou.</div>
@@ -1416,11 +1491,11 @@
       <div class="em-value"><a href="https://www.aponet.de/apotheke/notdienstsuche" target="_blank" rel="noopener">aponet.de/notdienst</a></div>
     </div>
   </div>
-</section>
+</details></section>
 
 <!-- MÍSTA SETKÁNÍ -->
-<section class="section" id="meeting">
-  <h2 class="section-title">Místa setkání</h2>
+<section class="section" id="meeting"><details><summary class="section-title">Místa setkání</summary>
+  
   <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
     Pokud se kdokoliv ztratí, sejdeme se na předem domluveném místě podle dne.
   </div>
@@ -1446,11 +1521,11 @@
   <div class="meeting-rule">
     <strong>Pravidlo:</strong> Pokud se ztratíš, dojdi na nejbližší smluvené místo a počkej max 30 min. Pokud se nikdo neukáže, jdi na hotel a zavolej vedoucímu (viz Tísňové kontakty).
   </div>
-</section>
+</details></section>
 
 <!-- CO JE POBLÍŽU -->
-<section class="section" id="poblizu">
-  <h2 class="section-title">Co je poblíž</h2>
+<section class="section" id="poblizu"><details><summary class="section-title">Co je poblíž</summary>
+  
   <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
     Najdi památky, muzea a zajímavá místa ve tvé blízkosti. Data z Wikipedie.
   </div>
@@ -1464,20 +1539,20 @@
     <span id="nearby-meta" class="nearby-meta"></span>
   </div>
   <div id="nearby-list" class="nearby-list"></div>
-</section>
+</details></section>
 
 <!-- FOTKY -->
-<section class="section" id="fotky">
-  <h2 class="section-title">Referenční fotky</h2>
+<section class="section" id="fotky"><details><summary class="section-title">Referenční fotky</summary>
+  
   <div style="color:var(--muted); font-size:.85rem; margin-bottom:1rem">
     Místa, která navštívíme. Hledáš <strong style="color:var(--gold)">naše vlastní fotky z výletu</strong>? Najdeš je v <a href="./nase-fotky.html" style="color:var(--gold)">Naše fotky →</a>
   </div>
   <div class="gallery-grid" id="gallery-grid"></div>
-</section>
+</details></section>
 
 <!-- KALKULAČKA -->
-<section class="section" id="kalkulacka">
-  <h2 class="section-title">Kalkulačka Kč / €</h2>
+<section class="section" id="kalkulacka"><details><summary class="section-title">Kalkulačka Kč / €</summary>
+  
   <div class="calc-box">
     <div class="calc-row">
       <div class="calc-input-wrap">
@@ -1495,28 +1570,28 @@
       <span id="calc-rate-source">zdroj: <a href="https://www.frankfurter.app/" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:none">frankfurter.app</a></span>
     </div>
   </div>
-</section>
+</details></section>
 
 <!-- CHECKLIST -->
-<section class="section" id="checklist">
-  <h2 class="section-title">Co si zabalit</h2>
+<section class="section" id="checklist"><details><summary class="section-title">Co si zabalit</summary>
+  
   <div class="checklist-meta">
     <span><strong id="checklist-count">0</strong> z <strong id="checklist-total">0</strong></span>
     <div class="checklist-progress-bar"><div class="checklist-progress-fill" id="checklist-pf"></div></div>
     <button id="checklist-reset" class="checklist-reset" type="button">Reset</button>
   </div>
   <div class="checklist-grid" id="checklist-grid"></div>
-</section>
+</details></section>
 
 <!-- NĚMČINA -->
-<section class="section" id="frazem">
-  <h2 class="section-title">Mini-slovník němčiny</h2>
+<section class="section" id="frazem"><details><summary class="section-title">Mini-slovník němčiny</summary>
+  
   <div class="phrases-grid" id="phrases-grid"></div>
-</section>
+</details></section>
 
 <!-- KULTURNÍ POZNÁMKY -->
-<section class="section" id="kultura">
-  <h2 class="section-title">Kulturní poznámky</h2>
+<section class="section" id="kultura"><details><summary class="section-title">Kulturní poznámky</summary>
+  
   <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
     Co bys měl/a vědět, aby ses v Berlíně nedostal/a do trapasu.
   </div>
@@ -1554,20 +1629,20 @@
       <div style="font-size:.85rem">Berlíňani <strong>třídí všechno</strong>. Modrá = papír, žlutá = plast, hnědá = bio, šedá = směs. V hotelu sleduj barvy košů.</div>
     </div>
   </div>
-</section>
+</details></section>
 
 <!-- QR -->
-<section class="section" id="qrcode">
-  <h2 class="section-title">Sdílet QR kódem</h2>
+<section class="section" id="qrcode"><details><summary class="section-title">Sdílet QR kódem</summary>
+  
   <div class="qr-box">
     <img id="qr-img" class="qr-img" alt="QR kód s odkazem na tuto stránku" loading="lazy">
     <div class="qr-caption">Naskenuj mobilem nebo pošli rodičům — odkaz na tuto stránku.<br><span style="font-size:.75rem; margin-top:.5rem; display:inline-block">Připravil <strong style="color:var(--gold)">Tým Trampolín</strong></span></div>
   </div>
-</section>
+</details></section>
 
 <!-- TÍSŇOVÉ KONTAKTY -->
-<section class="section" id="emergency">
-  <h2 class="section-title">Tísňové kontakty</h2>
+<section class="section" id="emergency"><details><summary class="section-title">Tísňové kontakty</summary>
+  
   <div class="emergency-box">
     <div style="font-size:.9rem;color:var(--muted);margin-bottom:.5rem">V případě nouze nejprve kontaktujte pedagogický doprovod. Při ohrožení života volejte 112.</div>
     <div class="emergency-grid">
@@ -1613,7 +1688,7 @@
       </div>
     </div>
   </div>
-</section>
+</details></section>
 
 <footer>
   <div style="font-size:1rem; color:var(--text); font-weight:600; margin-bottom:.4rem">
@@ -2464,6 +2539,46 @@ function initNearby() {
   });
 }
 
+// ── HOTEL PHOTO GALLERY ──────────────────────────────────────────
+const HOTEL_PHOTOS = [
+  '17_103.jpg','17_68.jpg','18096.jpg','204846269.jpg','24140.jpg',
+  '468351704.jpg','468351706.jpg','56069.jpg','60756.jpg','644040780.jpg',
+  '644040797.jpg','644040807.jpg','648001064.jpg','65263.jpg','676551911.jpg',
+  '676551914.jpg','676551917.jpg','74514.jpg','90373.jpg',
+];
+function renderHotelGallery() {
+  const grid = document.getElementById('hotel-gallery');
+  if (!grid) return;
+  grid.innerHTML = HOTEL_PHOTOS.map(name => `
+    <a class="hotel-photo" href="foto-hotel/${name}" target="_blank" rel="noopener">
+      <img src="foto-hotel/${name}" alt="A&O Hotel Berlin" loading="lazy" decoding="async">
+    </a>
+  `).join('');
+}
+
+// ── EXPAND / COLLAPSE ALL ────────────────────────────────────────
+function initExpandAll() {
+  const btn = document.getElementById('expand-all-btn');
+  if (!btn) return;
+  const getAll = () => document.querySelectorAll('section.section > details');
+  const refreshLabel = () => {
+    const all = getAll();
+    const openCount = Array.from(all).filter(d => d.open).length;
+    btn.textContent = openCount >= all.length / 2 ? 'Sbalit vše' : 'Rozbalit vše';
+  };
+  btn.addEventListener('click', () => {
+    const all = getAll();
+    const openCount = Array.from(all).filter(d => d.open).length;
+    const target = openCount < all.length;
+    all.forEach(d => { d.open = target; });
+    refreshLabel();
+  });
+  document.querySelectorAll('section.section > details').forEach(d => {
+    d.addEventListener('toggle', refreshLabel);
+  });
+  refreshLabel();
+}
+
 // ── HOTEL MINI-MAP ──────────────────────────────────────────────
 function initHotelMap() {
   const el = document.getElementById('hotel-map');
@@ -2823,7 +2938,9 @@ function initAll() {
   initNearby();
   loadWeather();
   renderGallery();
+  renderHotelGallery();
   initLightbox();
+  initExpandAll();
   initChecklist();
   renderPhrases();
   renderQR();
