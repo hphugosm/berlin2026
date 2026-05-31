@@ -52,7 +52,14 @@
       padding: 0 1.5rem;
     }
     .nav-brand { font-weight: 700; font-size: 1rem; color: var(--gold); text-decoration: none; }
-    .nav-links { display: flex; gap: .25rem; list-style: none; }
+    .nav-links {
+      display: flex; gap: .25rem; list-style: none;
+      overflow-x: auto; max-width: 70vw;
+      scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+    }
+    .nav-links::-webkit-scrollbar { height: 3px; }
+    .nav-links::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .nav-links li { flex-shrink: 0; }
     .nav-links a {
       color: var(--muted); text-decoration: none;
       padding: .4rem .75rem; border-radius: 6px; font-size: .875rem;
@@ -386,6 +393,197 @@
       border-top: 1px solid var(--border);
     }
 
+    /* edu — timeline + facts */
+    .timeline {
+      position: relative;
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 6px; top: 4px; bottom: 4px;
+      width: 2px; background: var(--border);
+    }
+    .timeline-item {
+      position: relative;
+      padding: .35rem 0 .35rem .8rem;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute; left: -1.4rem; top: .65rem;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--gold); border: 3px solid var(--bg);
+    }
+    .timeline-year {
+      font-weight: 700; color: var(--gold);
+      font-size: .85rem; font-variant-numeric: tabular-nums;
+    }
+    .timeline-desc { font-size: .9rem; }
+
+    .facts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: .65rem;
+    }
+    .fact-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+    }
+    .fact-num {
+      font-size: 1.6rem; font-weight: 800; color: var(--gold);
+      line-height: 1.1; margin-bottom: .25rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .fact-desc { font-size: .82rem; color: var(--muted); }
+
+    /* praktické info — h3 subsections */
+    .subsection-title {
+      font-size: 1rem; font-weight: 700;
+      margin: 1.5rem 0 .75rem;
+      color: var(--gold);
+      letter-spacing: .02em;
+    }
+    .subsection-title:first-child { margin-top: 0; }
+    .disclaimer {
+      font-size: .78rem; color: var(--muted);
+      background: var(--surface); border-left: 3px solid var(--gold);
+      padding: .5rem .8rem; border-radius: 4px;
+      margin-bottom: 1rem;
+    }
+    .warning-banner {
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.3);
+      color: var(--text);
+      padding: .65rem .9rem; border-radius: 8px;
+      font-size: .85rem; font-weight: 500;
+      margin: .75rem 0;
+    }
+    .warning-banner strong { color: #ef4444; }
+
+    /* meeting points */
+    #meeting-map { height: 320px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 1rem; }
+    .meeting-rule {
+      background: rgba(245,208,32,.08);
+      border: 1px solid rgba(245,208,32,.3);
+      color: var(--text);
+      padding: .75rem 1rem; border-radius: 8px;
+      font-size: .88rem; margin-top: 1rem;
+    }
+
+    /* nearby */
+    .nearby-controls {
+      display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .nearby-btn {
+      background: var(--gold); color: #000;
+      border: none; border-radius: 8px;
+      padding: .55rem 1rem; font-size: .85rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+    }
+    .nearby-btn:hover { background: var(--gold-dk); }
+    .nearby-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .nearby-radius {
+      display: flex; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: .15rem;
+    }
+    .nearby-radius button {
+      background: transparent; color: var(--muted); border: none;
+      padding: .4rem .8rem; font-size: .78rem; cursor: pointer;
+      font-family: inherit; border-radius: 6px;
+    }
+    .nearby-radius button.active {
+      background: var(--gold); color: #000; font-weight: 600;
+    }
+    .nearby-meta { font-size: .78rem; color: var(--muted); }
+    .nearby-list { display: flex; flex-direction: column; gap: .5rem; }
+    .nearby-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: .85rem 1rem;
+      display: flex; gap: .85rem; align-items: flex-start;
+    }
+    .nearby-img {
+      width: 64px; height: 64px; border-radius: 6px; object-fit: cover;
+      flex-shrink: 0; background: var(--bg);
+    }
+    .nearby-body { flex: 1; min-width: 0; }
+    .nearby-title-row {
+      display: flex; justify-content: space-between; gap: .5rem;
+      align-items: baseline; margin-bottom: .25rem;
+    }
+    .nearby-title { font-weight: 600; font-size: .92rem; }
+    .nearby-dist {
+      font-size: .75rem; color: var(--gold); font-weight: 600;
+      white-space: nowrap; font-variant-numeric: tabular-nums;
+    }
+    .nearby-extract {
+      font-size: .8rem; color: var(--muted);
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .nearby-links {
+      margin-top: .35rem; font-size: .75rem;
+      display: flex; gap: .75rem;
+    }
+    .nearby-links a { color: var(--gold); text-decoration: none; }
+    .nearby-links a:hover { text-decoration: underline; }
+
+    /* lightbox */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.92);
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-content {
+      max-width: 92vw; max-height: 90vh;
+      display: flex; flex-direction: column; align-items: center;
+      gap: .75rem;
+    }
+    .lightbox-img {
+      max-width: 92vw; max-height: 70vh;
+      border-radius: 8px;
+      background: var(--surface);
+    }
+    .lightbox-caption {
+      color: #fff; text-align: center;
+      max-width: 720px;
+    }
+    .lightbox-title { font-size: 1.05rem; font-weight: 700; margin-bottom: .3rem; }
+    .lightbox-extract { font-size: .85rem; color: #ccc; line-height: 1.5; }
+    .lightbox-extract a { color: var(--gold); }
+    .lightbox-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(255,255,255,.1); color: #fff;
+      border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
+      width: 40px; height: 40px; font-size: 1.4rem;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,.2); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,.1); color: #fff;
+      border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
+      width: 44px; height: 44px; font-size: 1.4rem;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-prev { left: 1rem; }
+    .lightbox-next { right: 1rem; }
+    .lightbox-nav:hover { background: rgba(255,255,255,.2); }
+    .gallery-item { cursor: pointer; }
+
+    /* wikipedia attribution */
+    .wiki-attribution {
+      margin-top: 1rem;
+      font-size: .72rem; color: var(--muted);
+      text-align: center;
+    }
+    .wiki-attribution a { color: var(--muted); }
+
     /* checklist */
     .checklist-grid {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -509,11 +707,11 @@
     @media print {
       body { background: #fff; color: #000; }
       nav, .hero-countdown, .now-section, .train-services,
-      #tracker-box, #attractions-map, #hotel-map, .map-legend,
+      #tracker-box, #attractions-map, #hotel-map, #meeting-map, .map-legend,
       .gallery-grid, .calc-box, #share-btn, #hamburger, .ics-btn,
-      #theme-btn, .toast, .weather-grid, .qr-box,
+      #theme-btn, .toast, .weather-grid, .qr-box, .lightbox,
       #checklist, #frazem, #qrcode, #fotky, #mapa, #pocasi,
-      #kalkulacka, #vlak {
+      #kalkulacka, #vlak, #poblizu, .nearby-controls, .nearby-list {
         display: none !important;
       }
       .section { page-break-inside: avoid; border-bottom: 1px solid #ccc; }
@@ -668,13 +866,18 @@
   <ul class="nav-links" id="nav-links">
     <li><a href="#info">Info</a></li>
     <li><a href="#vlak">Vlak</a></li>
+    <li><a href="#edu">Berlín</a></li>
     <li><a href="#program">Program</a></li>
     <li><a href="#mapa">Mapa</a></li>
     <li><a href="#hotel">Hotel</a></li>
+    <li><a href="#praktickeinfo">Praktické</a></li>
+    <li><a href="#meeting">Setkání</a></li>
+    <li><a href="#poblizu">Poblíž</a></li>
     <li><a href="#fotky">Fotky</a></li>
     <li><a href="#kalkulacka">Kč/€</a></li>
     <li><a href="#checklist">Checklist</a></li>
     <li><a href="#frazem">Němčina</a></li>
+    <li><a href="#kultura">Kultura</a></li>
     <li><a href="#emergency">Tísňové</a></li>
     <li><a href="#qrcode">QR</a></li>
   </ul>
@@ -938,6 +1141,78 @@
   </div>
 </section>
 
+<!-- BERLÍN V KOSTCE (edukace) -->
+<section class="section" id="edu">
+  <h2 class="section-title">Berlín v kostce</h2>
+  <div style="color:var(--muted); font-size:.88rem; margin-bottom:1.25rem">
+    Krátký kontext k místům, která navštívíme.
+  </div>
+
+  <h3 class="subsection-title">Časová osa</h3>
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="timeline-year">1237</div>
+      <div class="timeline-desc">První zmínka o Berlíně a sesterské Cölln na ostrově Spréva (dnes Museum Insel).</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">1701</div>
+      <div class="timeline-desc">Berlín hlavním městem Pruského království.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">1871</div>
+      <div class="timeline-desc">Hlavní město sjednocené Německé říše. Reichstag dokončen 1894.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">1933–1945</div>
+      <div class="timeline-desc">Nacistická éra a II. světová válka. Konec války Berlín zničený, rozdělený na 4 okupační sektory (USA, UK, FR, SSSR).</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">13. 8. 1961</div>
+      <div class="timeline-desc">Postavena Berlínská zeď — přes noc rozdělila město na východní a západní část.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">9. 11. 1989</div>
+      <div class="timeline-desc">Pád Berlínské zdi po 28 letech. Symbol konce Studené války.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">3. 10. 1990</div>
+      <div class="timeline-desc">Znovusjednocení Německa. Den německé jednoty je dnes státní svátek.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-year">1999</div>
+      <div class="timeline-desc">Berlín se vrací jako hlavní město jednotného Německa (předtím byl Bonn).</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">Zajímavá čísla</h3>
+  <div class="facts-grid">
+    <div class="fact-card">
+      <div class="fact-num">3,7 M</div>
+      <div class="fact-desc">Obyvatel — 3. největší v EU (po Londýně a Madridu).</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-num">9×</div>
+      <div class="fact-desc">Větší rozlohou než Paříž (~892 km²).</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-num">~1 700</div>
+      <div class="fact-desc">Mostů — víc než Benátky a Amsterdam dohromady.</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-num">155 km</div>
+      <div class="fact-desc">Délka Berlínské zdi (z toho 43 km přímo městem).</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-num">28 let</div>
+      <div class="fact-desc">Stála zeď (1961–1989). Padla rok před Sametovou revolucí.</div>
+    </div>
+    <div class="fact-card">
+      <div class="fact-num">~35 %</div>
+      <div class="fact-desc">Plochy města tvoří zeleň a voda.</div>
+    </div>
+  </div>
+</section>
+
 <!-- MAPA ATRAKCÍ -->
 <section class="section" id="mapa">
   <h2 class="section-title">Mapa atrakcí</h2>
@@ -978,6 +1253,208 @@
       Z Berlin Hbf cca <strong style="color:var(--text)">5 min pěšky</strong> · Lehrter Str. 12, 10557 Berlin
     </div>
   </div>
+</section>
+
+<!-- PRAKTICKÉ INFO (4 subsekce) -->
+<section class="section" id="praktickeinfo">
+  <h2 class="section-title">Praktické info</h2>
+
+  <h3 class="subsection-title">Otevírací doby muzeí a atrakcí</h3>
+  <div class="disclaimer">Hodiny orientačně k 31. 5. 2026 — pro jistotu ověřte přímo na webu instituce před návštěvou.</div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-label">Berliner Dom · Den 3</div>
+      <div class="info-value">Po-So 10–18, Ne 12–19<br><a href="https://www.berlinerdom.de" target="_blank" rel="noopener" style="color:var(--gold)">berlinerdom.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Altes Museum · Den 3</div>
+      <div class="info-value">Út-Ne 10–18, <strong style="color:#ef4444">Po zavřeno</strong><br><a href="https://www.smb.museum/en/museums-institutions/altes-museum/" target="_blank" rel="noopener" style="color:var(--gold)">smb.museum</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Neues Museum · Den 3</div>
+      <div class="info-value">Út-Ne 10–18, <strong style="color:#ef4444">Po zavřeno</strong><br><a href="https://www.smb.museum/en/museums-institutions/neues-museum/" target="_blank" rel="noopener" style="color:var(--gold)">smb.museum</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Deutsches Historisches Museum · Den 3</div>
+      <div class="info-value">Po-Ne 10–18<br><a href="https://www.dhm.de/en/" target="_blank" rel="noopener" style="color:var(--gold)">dhm.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Jüdisches Museum · Den 2</div>
+      <div class="info-value">Denně 10–19<br><a href="https://www.jmberlin.de/en" target="_blank" rel="noopener" style="color:var(--gold)">jmberlin.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Berlinische Galerie · Den 2</div>
+      <div class="info-value">St-Po 10–18, <strong style="color:#ef4444">Út zavřeno</strong><br><a href="https://berlinischegalerie.de/en/" target="_blank" rel="noopener" style="color:var(--gold)">berlinischegalerie.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Deutsche Kinemathek · Den 2</div>
+      <div class="info-value">Út-Ne 10–18, <strong style="color:#ef4444">Po zavřeno</strong><br><a href="https://www.deutsche-kinemathek.de/en" target="_blank" rel="noopener" style="color:var(--gold)">deutsche-kinemathek.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Mauermuseum Checkpoint Charlie · Den 2</div>
+      <div class="info-value">Denně 10–22<br><a href="https://www.mauermuseum.de/en/" target="_blank" rel="noopener" style="color:var(--gold)">mauermuseum.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Reichstag dome · Den 1</div>
+      <div class="info-value">Zdarma, <strong style="color:#ef4444">nutná registrace předem!</strong><br><a href="https://www.bundestag.de/en/visittheBundestag" target="_blank" rel="noopener" style="color:var(--gold)">bundestag.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Staatsoper Unter den Linden · Den 1</div>
+      <div class="info-value">Večerní představení (Nabucco)<br><a href="https://www.staatsoper-berlin.de/en/" target="_blank" rel="noopener" style="color:var(--gold)">staatsoper-berlin.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">East Side Gallery · Den 2</div>
+      <div class="info-value">Venku, vždy přístupné (zdarma)</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Brandenburger Tor + Alexanderplatz</div>
+      <div class="info-value">Venkovní památky — vždy přístupné</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">Kde se najíst — tipy per den</h3>
+  <div class="days">
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 1 — kolem Unter den Linden / Brandenburg Tor</span>
+        <span class="day-date">~€10–15 oběd</span>
+      </div>
+      <div class="day-events">
+        <div class="event"><div class="event-time">Cheap</div><div><div class="event-desc">Currywurst stands u Brandenburg Tor</div><div class="event-note">Klasická berlínská klobása, ~€4-6</div></div></div>
+        <div class="event"><div class="event-time">Beer</div><div><div class="event-desc">Augustiner am Gendarmenmarkt</div><div class="event-note">Bavorská kuchyně, pivo, blízko opery</div></div></div>
+        <div class="event"><div class="event-time">Chain</div><div><div class="event-desc">Vapiano (pasta/pizza), Hard Rock Cafe</div><div class="event-note">Spolehlivé, vegetariánské volby</div></div></div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 2 — Kreuzberg / Checkpoint Charlie / Potsdamer Platz</span>
+        <span class="day-date">~€8–12 oběd</span>
+      </div>
+      <div class="day-events">
+        <div class="event"><div class="event-time">★★★</div><div><div class="event-desc">Mustafa's Gemüse Kebap (Mehringdamm 32)</div><div class="event-note">Legendární kebab — fronta běžně 30+ min, ale stojí za to</div></div></div>
+        <div class="event"><div class="event-time">Cheap</div><div><div class="event-desc">Curry 36 (Mehringdamm 36)</div><div class="event-note">Nejznámější Currywurst v Berlíně, otevřeno do noci</div></div></div>
+        <div class="event"><div class="event-time">Beer</div><div><div class="event-desc">Lindenbräu am Sony Center (Potsdamer Platz)</div><div class="event-note">Velký biergarten, večeře</div></div></div>
+        <div class="event"><div class="event-time">Mall</div><div><div class="event-desc">Mall of Berlin food court</div><div class="event-note">Asijská, burgery, salát — rychlé, klimatizované</div></div></div>
+      </div>
+    </div>
+    <div class="day-card">
+      <div class="day-header">
+        <span class="day-title">Den 3 — Museum Insel / Alexanderplatz</span>
+        <span class="day-date">~€10–15 oběd</span>
+      </div>
+      <div class="day-events">
+        <div class="event"><div class="event-time">Beer</div><div><div class="event-desc">Hofbräu Berlin (Karl-Liebknecht-Str.)</div><div class="event-note">Bavorská piva blízko Alexanderplatz</div></div></div>
+        <div class="event"><div class="event-time">Mall</div><div><div class="event-desc">Alexa Shopping Mall food court</div><div class="event-note">Rychlé jídlo přímo u Alexanderplatz</div></div></div>
+        <div class="event"><div class="event-time">Luxus</div><div><div class="event-desc">KaDeWe food hall (6. patro, Wittenbergplatz)</div><div class="event-note">Slavná food hall, vyšší cenovka, gourmet</div></div></div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:.82rem; color:var(--muted); margin-top:.5rem">
+    <strong>Vegetariáni:</strong> Mustafa's, Vapiano, food courts — vždy alespoň 2-3 volby. <strong>Vegani:</strong> hledejte "vegan" na cedulkách menu, Berlin je vegan-friendly.
+  </div>
+
+  <h3 class="subsection-title">Obchody &amp; nákupy</h3>
+  <div class="warning-banner">
+    <strong>Pozor:</strong> v Německu je v NEDĚLI většina obchodů ZAVŘENO (kromě nádraží, lékáren, restaurací). Nakupování si rezervuj na Po-So.
+  </div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-label">KaDeWe</div>
+      <div class="info-value">Největší dept store v EU, 6 pater · Wittenbergplatz<br><a href="https://www.kadewe.de/en" target="_blank" rel="noopener" style="color:var(--gold)">kadewe.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Galeries Lafayette</div>
+      <div class="info-value">Francouzský luxus · Französische Straße (blízko Brandenburg)<br><a href="https://www.galerieslafayette.de" target="_blank" rel="noopener" style="color:var(--gold)">galerieslafayette.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Mall of Berlin</div>
+      <div class="info-value">~270 obchodů · Leipziger Platz (Potsdamer Platz)<br><a href="https://www.mallofberlin.de/en/" target="_blank" rel="noopener" style="color:var(--gold)">mallofberlin.de</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Alexa Shopping Mall</div>
+      <div class="info-value">~180 obchodů · Alexanderplatz (Den 3 lokace)<br><a href="https://www.alexacentre.com/en" target="_blank" rel="noopener" style="color:var(--gold)">alexacentre.com</a></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">Friedrichstadt-Passagen</div>
+      <div class="info-value">Luxusní pasáže · Quartier 205-207, Friedrichstr.</div>
+    </div>
+    <div class="info-card" style="border-color:rgba(245,208,32,.3)">
+      <div class="info-label">Berlin suvenýry</div>
+      <div class="info-value"><strong>Ampelmann store</strong> (Hackesche Höfe) — východoněm. semafor merchandise<br><strong>Berlin Bear</strong> — všudypřítomné<br>Pohlednice, čokoláda Ritter, Haribo</div>
+    </div>
+  </div>
+
+  <h3 class="subsection-title">Lékárny (Apotheke)</h3>
+  <div class="emergency-grid">
+    <div class="emergency-item">
+      <div class="em-label">U hotelu (Berlin Hbf)</div>
+      <div class="em-value">Apotheky přímo na nádraží Berlin Hbf<br><span style="font-size:.78rem; color:var(--muted)">Otevřené i v neděli</span></div>
+    </div>
+    <div class="emergency-item">
+      <div class="em-label">U Mall of Berlin (Den 2)</div>
+      <div class="em-value">Apotheke v Mall of Berlin, Leipziger Platz</div>
+    </div>
+    <div class="emergency-item">
+      <div class="em-label">U Museum Insel (Den 3)</div>
+      <div class="em-value">Lékárny v okolí Hackescher Markt / Alexanderplatz</div>
+    </div>
+    <div class="emergency-item em-primary">
+      <div class="em-label">24/7 Notapotheke</div>
+      <div class="em-value"><a href="tel:08000022833">0800 0022833</a><br><span style="font-size:.78rem">Bezplatná linka — najde nejbližší pohotovostní lékárnu</span></div>
+    </div>
+    <div class="emergency-item">
+      <div class="em-label">Online vyhledávač</div>
+      <div class="em-value"><a href="https://www.aponet.de/apotheke/notdienstsuche" target="_blank" rel="noopener">aponet.de/notdienst</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- MÍSTA SETKÁNÍ -->
+<section class="section" id="meeting">
+  <h2 class="section-title">Místa setkání</h2>
+  <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
+    Pokud se kdokoliv ztratí, sejdeme se na předem domluveném místě podle dne.
+  </div>
+  <div id="meeting-map"></div>
+  <div class="info-grid">
+    <div class="info-card">
+      <div class="info-label" style="color:#f5d020">Den 1 — neděle</div>
+      <div class="info-value"><strong>Brandenburger Tor</strong><br><span style="font-size:.85rem; color:var(--muted)">Jižní strana, u sloupů (směr Reichstag)</span></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label" style="color:#3b82f6">Den 2 — pondělí</div>
+      <div class="info-value"><strong>Checkpoint Charlie</strong><br><span style="font-size:.85rem; color:var(--muted)">U repliky cedule "Sie verlassen den amerikanischen Sektor"</span></div>
+    </div>
+    <div class="info-card">
+      <div class="info-label" style="color:#22c55e">Den 3 — úterý</div>
+      <div class="info-value"><strong>Berliner Dom</strong><br><span style="font-size:.85rem; color:var(--muted)">Hlavní (jižní) vchod od Lustgartenu</span></div>
+    </div>
+    <div class="info-card" style="border-color:rgba(239,68,68,.4)">
+      <div class="info-label" style="color:#ef4444">Univerzální fallback</div>
+      <div class="info-value"><strong>A&amp;O Hotel recepce</strong><br><span style="font-size:.85rem; color:var(--muted)">Lehrter Str. 12, 10557 Berlin · 5 min od Berlin Hbf</span></div>
+    </div>
+  </div>
+  <div class="meeting-rule">
+    <strong>Pravidlo:</strong> Pokud se ztratíš, dojdi na nejbližší smluvené místo a počkej max 30 min. Pokud se nikdo neukáže, jdi na hotel a zavolej vedoucímu (viz Tísňové kontakty).
+  </div>
+</section>
+
+<!-- CO JE POBLÍŽU -->
+<section class="section" id="poblizu">
+  <h2 class="section-title">Co je poblíž</h2>
+  <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
+    Najdi památky, muzea a zajímavá místa ve tvé blízkosti. Data z Wikipedie.
+  </div>
+  <div class="nearby-controls">
+    <button id="nearby-btn" class="nearby-btn" type="button">Použít moji polohu</button>
+    <div class="nearby-radius" role="radiogroup" aria-label="Rádius hledání">
+      <button data-r="500" type="button">500 m</button>
+      <button data-r="1000" class="active" type="button">1 km</button>
+      <button data-r="2000" type="button">2 km</button>
+    </div>
+    <span id="nearby-meta" class="nearby-meta"></span>
+  </div>
+  <div id="nearby-list" class="nearby-list"></div>
 </section>
 
 <!-- FOTKY -->
@@ -1026,6 +1503,48 @@
 <section class="section" id="frazem">
   <h2 class="section-title">Mini-slovník němčiny</h2>
   <div class="phrases-grid" id="phrases-grid"></div>
+</section>
+
+<!-- KULTURNÍ POZNÁMKY -->
+<section class="section" id="kultura">
+  <h2 class="section-title">Kulturní poznámky</h2>
+  <div style="color:var(--muted); font-size:.88rem; margin-bottom:1rem">
+    Co bys měl/a vědět, aby ses v Berlíně nedostal/a do trapasu.
+  </div>
+  <div class="phrases-grid">
+    <div class="phrase-group">
+      <div class="phrase-group-title">Sunday Ruhetag</div>
+      <div style="font-size:.85rem">Většina obchodů je v neděli <strong>zavřená</strong> (zákon). Otevřené zůstávají: nádraží, lékárny, restaurace, muzea. Plánuj nákupy na sobotu.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Tipping (spropitné)</div>
+      <div style="font-size:.85rem">Restaurace: <strong>5–10 %</strong>, řekni částku včetně tipu při placení ("12 Euro, bitte"). Taxi: zaokrouhlit nahoru. Hotely: €1–2 za zavazadlo.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Cash &gt; karta</div>
+      <div style="font-size:.85rem">Hodně menších míst <strong>nebere kartu</strong> (zvlášť bistra, kebab stands, hudební vystoupení). Měj alespoň <strong>€50 v hotovosti</strong>. Bankomaty jsou všude.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Jaywalking</div>
+      <div style="font-size:.85rem">Berlíňani <strong>čekají na zelenou</strong> i když nejede auto. Když přejdeš na červenou, dostaneš nadávky a možná pokutu €5–10. Hlavně před dětmi to není v pohodě.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Ruhezeit (klid v noci)</div>
+      <div style="font-size:.85rem">Od <strong>22:00 do 6:00</strong> musí být klid. V hotelu šeptej, nepouštěj hlasitě hudbu. Stížnost od souseda = ohlášení na recepci.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Pfand (záloha na láhve)</div>
+      <div style="font-size:.85rem">Plastové láhve a plechovky mají zálohu <strong>€0,15–0,25</strong>. Vrať je do automatu v supermarketu — automat vyplivne kupón na slevu. Skleněné = €0,08.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">U-Bahn / S-Bahn</div>
+      <div style="font-size:.85rem">Před nástupem <strong>označ jízdenku</strong> ve žlutém razítkovači. Bez razítka = pokuta €60 i s platnou jízdenkou. Žádné turnikety, kontroly jsou v civilu.</div>
+    </div>
+    <div class="phrase-group">
+      <div class="phrase-group-title">Recyklace</div>
+      <div style="font-size:.85rem">Berlíňani <strong>třídí všechno</strong>. Modrá = papír, žlutá = plast, hnědá = bio, šedá = směs. V hotelu sleduj barvy košů.</div>
+    </div>
+  </div>
 </section>
 
 <!-- QR -->
@@ -1098,6 +1617,19 @@
 </footer>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog">
+  <button class="lightbox-close" aria-label="Zavřít" type="button">×</button>
+  <button class="lightbox-nav lightbox-prev" aria-label="Předchozí" type="button">‹</button>
+  <button class="lightbox-nav lightbox-next" aria-label="Další" type="button">›</button>
+  <div class="lightbox-content">
+    <img class="lightbox-img" id="lightbox-img" alt="">
+    <div class="lightbox-caption">
+      <div class="lightbox-title" id="lightbox-title"></div>
+      <div class="lightbox-extract" id="lightbox-extract"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────
@@ -1480,6 +2012,69 @@ function init() {
   setInterval(() => updateTracker(journey), 30000);
 }
 
+// ── WIKIPEDIA INTEGRATION ────────────────────────────────────────
+const WIKI_TTL_MS = 7 * 24 * 3600 * 1000; // 7 days
+
+function wikiCacheGet(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { exp, val } = JSON.parse(raw);
+    if (Date.now() > exp) { localStorage.removeItem(key); return null; }
+    return val;
+  } catch (e) { return null; }
+}
+function wikiCacheSet(key, val, ttl = WIKI_TTL_MS) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ exp: Date.now() + ttl, val }));
+  } catch (e) {
+    // localStorage full or disabled → silent fail
+  }
+}
+
+async function wikiSummary(title, lang = 'cs') {
+  if (!title) return null;
+  const key = `wiki-sum-${lang}-${title}`;
+  const cached = wikiCacheGet(key);
+  if (cached !== null) return cached;
+  const url = `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) {
+      if (lang === 'cs') return wikiSummary(title, 'en');
+      wikiCacheSet(key, null, 24 * 3600 * 1000); // negative cache 1 day
+      return null;
+    }
+    const d = await r.json();
+    if (d.type === 'disambiguation') {
+      if (lang === 'cs') return wikiSummary(title, 'en');
+      return null;
+    }
+    const result = {
+      extract: d.extract || '',
+      thumbnail: d.thumbnail?.source || null,
+      url: d.content_urls?.desktop?.page || `https://${lang}.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+      lang,
+      title: d.title || title,
+    };
+    wikiCacheSet(key, result);
+    return result;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function wikiNearby(lat, lng, radius = 1000, lang = 'cs') {
+  const url = `https://${lang}.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${lat}|${lng}&gsradius=${radius}&gslimit=15&format=json&origin=*`;
+  try {
+    const r = await fetch(url);
+    const d = await r.json();
+    return d.query?.geosearch || [];
+  } catch (e) {
+    return [];
+  }
+}
+
 // ── SERVICE WORKER (PWA) ─────────────────────────────────────────
 function initSW() {
   if (!('serviceWorker' in navigator)) return;
@@ -1675,28 +2270,28 @@ function initHamburger() {
 const ATTRACTIONS = {
   hotel: { name: 'A&O Hotel Berlin Hbf', lat: 52.5286, lng: 13.3681 },
   day1: [
-    { name: 'Brandenburger Tor',      lat: 52.5163, lng: 13.3777 },
-    { name: 'Reichstag',              lat: 52.5186, lng: 13.3762 },
-    { name: 'Unter den Linden',       lat: 52.5170, lng: 13.3884 },
-    { name: 'Alexanderplatz',         lat: 52.5219, lng: 13.4132 },
-    { name: 'Berliner Staatsoper',    lat: 52.5172, lng: 13.3953 },
+    { name: 'Brandenburger Tor',      lat: 52.5163, lng: 13.3777, wiki: 'Braniborská_brána' },
+    { name: 'Reichstag',              lat: 52.5186, lng: 13.3762, wiki: 'Říšský_sněm_(budova)' },
+    { name: 'Unter den Linden',       lat: 52.5170, lng: 13.3884, wiki: 'Unter_den_Linden' },
+    { name: 'Alexanderplatz',         lat: 52.5219, lng: 13.4132, wiki: 'Alexanderplatz' },
+    { name: 'Berliner Staatsoper',    lat: 52.5172, lng: 13.3953, wiki: 'Berlínská_státní_opera' },
   ],
   day2: [
-    { name: 'Ostbahnhof',             lat: 52.5104, lng: 13.4347 },
-    { name: 'East Side Gallery',      lat: 52.5052, lng: 13.4400 },
-    { name: 'Kreuzberg',              lat: 52.4985, lng: 13.4031 },
-    { name: 'Checkpoint Charlie',     lat: 52.5076, lng: 13.3904 },
-    { name: 'Jüdisches Museum',       lat: 52.5024, lng: 13.3953 },
-    { name: 'Berlinische Galerie',    lat: 52.5039, lng: 13.3963 },
-    { name: 'Deutsche Kinemathek',    lat: 52.5096, lng: 13.3744 },
-    { name: 'Potsdamer Platz',        lat: 52.5096, lng: 13.3759 },
+    { name: 'Ostbahnhof',             lat: 52.5104, lng: 13.4347, wiki: 'Berlin_Ostbahnhof' },
+    { name: 'East Side Gallery',      lat: 52.5052, lng: 13.4400, wiki: 'East_Side_Gallery' },
+    { name: 'Kreuzberg',              lat: 52.4985, lng: 13.4031, wiki: 'Kreuzberg' },
+    { name: 'Checkpoint Charlie',     lat: 52.5076, lng: 13.3904, wiki: 'Checkpoint_Charlie' },
+    { name: 'Jüdisches Museum',       lat: 52.5024, lng: 13.3953, wiki: 'Židovské_muzeum_(Berlín)' },
+    { name: 'Berlinische Galerie',    lat: 52.5039, lng: 13.3963, wiki: 'Berlinische_Galerie' },
+    { name: 'Deutsche Kinemathek',    lat: 52.5096, lng: 13.3744, wiki: 'Deutsche_Kinemathek' },
+    { name: 'Potsdamer Platz',        lat: 52.5096, lng: 13.3759, wiki: 'Potsdamer_Platz' },
   ],
   day3: [
-    { name: 'Berliner Dom',           lat: 52.5191, lng: 13.4011 },
-    { name: 'Museum Insel',           lat: 52.5208, lng: 13.3964 },
-    { name: 'Altes Museum',           lat: 52.5193, lng: 13.3987 },
-    { name: 'Neues Museum',           lat: 52.5205, lng: 13.3983 },
-    { name: 'Dt. Historisches Museum',lat: 52.5174, lng: 13.3978 },
+    { name: 'Berliner Dom',           lat: 52.5191, lng: 13.4011, wiki: 'Berlínský_dóm' },
+    { name: 'Museum Insel',           lat: 52.5208, lng: 13.3964, wiki: 'Museumsinsel' },
+    { name: 'Altes Museum',           lat: 52.5193, lng: 13.3987, wiki: 'Altes_Museum' },
+    { name: 'Neues Museum',           lat: 52.5205, lng: 13.3983, wiki: 'Neues_Museum' },
+    { name: 'Dt. Historisches Museum',lat: 52.5174, lng: 13.3978, wiki: 'Deutsches_Historisches_Museum' },
   ],
 };
 
@@ -1705,6 +2300,22 @@ function divIconColor(color, size = 14) {
     html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:3px solid #0f1117;box-shadow:0 0 6px ${color}"></div>`,
     className: '', iconAnchor: [size/2 + 1.5, size/2 + 1.5]
   });
+}
+
+function buildWikiPopupHtml(p, label, summary) {
+  const safe = s => (s || '').replace(/[<>]/g, c => c === '<' ? '&lt;' : '&gt;');
+  let html = `<strong>${safe(p.name)}</strong><br><span style="font-size:.78rem; color:#aaa">${safe(label)}</span>`;
+  if (summary === 'loading') {
+    html += `<div style="margin-top:.5rem; font-size:.8rem; color:#aaa">Načítám popis…</div>`;
+  } else if (summary && summary.extract) {
+    if (summary.thumbnail) {
+      html += `<div style="margin-top:.5rem"><img src="${summary.thumbnail}" alt="" style="max-width:200px; max-height:120px; border-radius:6px; display:block"></div>`;
+    }
+    const extract = summary.extract.length > 280 ? summary.extract.slice(0, 280) + '…' : summary.extract;
+    html += `<div style="margin-top:.5rem; font-size:.8rem; line-height:1.4">${safe(extract)}</div>`;
+    html += `<div style="margin-top:.5rem; font-size:.75rem"><a href="${summary.url}" target="_blank" rel="noopener" style="color:#f5d020">Číst víc na Wikipedii →</a></div>`;
+  }
+  return html;
 }
 
 function initAttractionsMap() {
@@ -1716,8 +2327,19 @@ function initAttractionsMap() {
   const all = [];
   function add(list, color, label) {
     list.forEach(p => {
-      L.marker([p.lat, p.lng], { icon: divIconColor(color) })
-        .bindPopup(`<strong>${p.name}</strong><br>${label}`).addTo(map);
+      const marker = L.marker([p.lat, p.lng], { icon: divIconColor(color) });
+      marker.bindPopup(buildWikiPopupHtml(p, label, null), { maxWidth: 260 });
+      if (p.wiki) {
+        let loaded = false;
+        marker.on('popupopen', async () => {
+          if (loaded) return;
+          loaded = true;
+          marker.setPopupContent(buildWikiPopupHtml(p, label, 'loading'));
+          const sum = await wikiSummary(p.wiki);
+          marker.setPopupContent(buildWikiPopupHtml(p, label, sum));
+        });
+      }
+      marker.addTo(map);
       all.push([p.lat, p.lng]);
     });
   }
@@ -1732,6 +2354,105 @@ function initAttractionsMap() {
   all.push([h.lat, h.lng]);
 
   map.fitBounds(L.latLngBounds(all), { padding: [40, 40] });
+}
+
+// ── MEETING POINTS MAP ──────────────────────────────────────────
+function initMeetingMap() {
+  const el = document.getElementById('meeting-map');
+  if (!el) return;
+  const map = L.map('meeting-map', { attributionControl: false });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 18 }).addTo(map);
+  const points = [
+    { lat: 52.5163, lng: 13.3777, color: '#f5d020', name: 'Den 1: Brandenburger Tor' },
+    { lat: 52.5076, lng: 13.3904, color: '#3b82f6', name: 'Den 2: Checkpoint Charlie' },
+    { lat: 52.5191, lng: 13.4011, color: '#22c55e', name: 'Den 3: Berliner Dom' },
+    { lat: 52.5286, lng: 13.3681, color: '#ef4444', name: 'A&O Hotel' },
+  ];
+  const bounds = [];
+  points.forEach(p => {
+    L.marker([p.lat, p.lng], { icon: divIconColor(p.color, 16) })
+      .bindTooltip(p.name, { permanent: false, direction: 'top' })
+      .bindPopup(`<strong>${p.name}</strong>`).addTo(map);
+    bounds.push([p.lat, p.lng]);
+  });
+  map.fitBounds(L.latLngBounds(bounds), { padding: [40, 40] });
+}
+
+// ── NEARBY (geolocation + Wikipedia GeoSearch) ───────────────────
+function initNearby() {
+  const btn = document.getElementById('nearby-btn');
+  const list = document.getElementById('nearby-list');
+  const meta = document.getElementById('nearby-meta');
+  if (!btn || !list || !meta) return;
+
+  let radius = 1000;
+  document.querySelectorAll('.nearby-radius button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.nearby-radius button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      radius = parseInt(b.getAttribute('data-r'), 10);
+    });
+  });
+
+  btn.addEventListener('click', async () => {
+    if (!navigator.geolocation) {
+      meta.textContent = 'GPS nepodporováno v tomto prohlížeči';
+      return;
+    }
+    btn.disabled = true;
+    meta.textContent = 'Získávám polohu…';
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000, maximumAge: 60000 });
+      });
+      const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+      const radTxt = radius >= 1000 ? (radius/1000) + ' km' : radius + ' m';
+      meta.textContent = `Poloha ±${Math.round(accuracy)} m · rádius ${radTxt}`;
+      list.innerHTML = '<div style="color:var(--muted); padding:1rem">Hledám zajímavá místa…</div>';
+      const items = await wikiNearby(lat, lng, radius);
+      if (items.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted); padding:1rem">Nic zajímavého poblíž — zkus větší rádius</div>';
+        return;
+      }
+      list.innerHTML = items.map(item => {
+        const distTxt = item.dist >= 1000 ? (item.dist/1000).toFixed(1) + ' km' : Math.round(item.dist) + ' m';
+        return `<div class="nearby-item" data-title="${item.title}">
+          <div class="nearby-img-wrap" style="flex-shrink:0; width:64px; height:64px"></div>
+          <div class="nearby-body">
+            <div class="nearby-title-row">
+              <span class="nearby-title">${item.title}</span>
+              <span class="nearby-dist">${distTxt}</span>
+            </div>
+            <div class="nearby-extract" data-extract style="color:var(--muted)">…</div>
+            <div class="nearby-links">
+              <a href="https://cs.wikipedia.org/wiki/${encodeURIComponent(item.title)}" target="_blank" rel="noopener">Wikipedia</a>
+              <a href="https://www.openstreetmap.org/?mlat=${item.lat}&mlon=${item.lon}&zoom=17" target="_blank" rel="noopener">Mapa</a>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+      // Lazy fetch extracts and thumbnails
+      list.querySelectorAll('.nearby-item').forEach(el => {
+        const title = el.getAttribute('data-title');
+        wikiSummary(title).then(sum => {
+          const extractEl = el.querySelector('[data-extract]');
+          if (sum && sum.extract) {
+            extractEl.textContent = sum.extract.length > 160 ? sum.extract.slice(0, 160) + '…' : sum.extract;
+            if (sum.thumbnail) {
+              el.querySelector('.nearby-img-wrap').innerHTML = `<img src="${sum.thumbnail}" alt="" class="nearby-img">`;
+            }
+          } else {
+            extractEl.textContent = '';
+          }
+        });
+      });
+    } catch (e) {
+      meta.textContent = e.code === 1 ? 'GPS povolení zamítnuto v prohlížeči' : 'Polohu nelze získat';
+      list.innerHTML = '';
+    } finally {
+      btn.disabled = false;
+    }
+  });
 }
 
 // ── HOTEL MINI-MAP ──────────────────────────────────────────────
@@ -1797,27 +2518,109 @@ async function loadWeather() {
 
 // ── GALLERY ──────────────────────────────────────────────────────
 const GALLERY = [
-  { day: 1, label: 'Brandenburger Tor',  seed: 'brandenburg-gate' },
-  { day: 1, label: 'Reichstag',          seed: 'reichstag-berlin' },
-  { day: 1, label: 'Alexanderplatz',     seed: 'alexanderplatz' },
-  { day: 1, label: 'Unter den Linden',   seed: 'berlin-unterdenlinden' },
-  { day: 2, label: 'East Side Gallery',  seed: 'eastsidegallery' },
-  { day: 2, label: 'Checkpoint Charlie', seed: 'checkpoint-charlie' },
-  { day: 2, label: 'Potsdamer Platz',    seed: 'potsdamerplatz' },
-  { day: 3, label: 'Berliner Dom',       seed: 'berliner-dom' },
-  { day: 3, label: 'Museum Insel',       seed: 'museumsinsel' },
+  { day: 1, label: 'Brandenburger Tor',  wiki: 'Braniborská_brána',           seed: 'brandenburg-gate' },
+  { day: 1, label: 'Reichstag',          wiki: 'Říšský_sněm_(budova)',        seed: 'reichstag-berlin' },
+  { day: 1, label: 'Alexanderplatz',     wiki: 'Alexanderplatz',              seed: 'alexanderplatz' },
+  { day: 1, label: 'Unter den Linden',   wiki: 'Unter_den_Linden',            seed: 'berlin-unterdenlinden' },
+  { day: 2, label: 'East Side Gallery',  wiki: 'East_Side_Gallery',           seed: 'eastsidegallery' },
+  { day: 2, label: 'Checkpoint Charlie', wiki: 'Checkpoint_Charlie',          seed: 'checkpoint-charlie' },
+  { day: 2, label: 'Potsdamer Platz',    wiki: 'Potsdamer_Platz',             seed: 'potsdamerplatz' },
+  { day: 3, label: 'Berliner Dom',       wiki: 'Berlínský_dóm',               seed: 'berliner-dom' },
+  { day: 3, label: 'Museum Insel',       wiki: 'Museumsinsel',                seed: 'museumsinsel' },
 ];
 
 function renderGallery() {
   const grid = document.getElementById('gallery-grid');
   if (!grid) return;
-  grid.innerHTML = GALLERY.map(g => `
-    <div class="gallery-item">
+  // Initial render with picsum fallback (instant)
+  grid.innerHTML = GALLERY.map((g, i) => `
+    <div class="gallery-item" data-idx="${i}">
       <img src="https://picsum.photos/seed/${g.seed}/400/400" alt="${g.label}" loading="lazy" decoding="async">
       <div class="gallery-day">Den ${g.day}</div>
       <div class="gallery-caption">${g.label}</div>
     </div>
-  `).join('');
+  `).join('') + `<div class="wiki-attribution" style="grid-column:1/-1">Fotky z Wikimedia Commons (Wikipedie) — autoři viz článek</div>`;
+  // Async upgrade to Wikipedia thumbnails
+  GALLERY.forEach((g, i) => {
+    if (!g.wiki) return;
+    wikiSummary(g.wiki).then(sum => {
+      if (!sum || !sum.thumbnail) return;
+      const item = grid.querySelector(`.gallery-item[data-idx="${i}"]`);
+      if (!item) return;
+      const img = item.querySelector('img');
+      if (img) {
+        img.src = sum.thumbnail;
+        g._wikiSummary = sum; // cache for lightbox
+      }
+    });
+  });
+}
+
+// ── LIGHTBOX ─────────────────────────────────────────────────────
+const lbState = { idx: -1, open: false };
+
+function openLightbox(idx) {
+  lbState.idx = idx;
+  lbState.open = true;
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderLightbox();
+}
+function closeLightbox() {
+  lbState.open = false;
+  const lb = document.getElementById('lightbox');
+  if (!lb) return;
+  lb.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function navLightbox(delta) {
+  lbState.idx = (lbState.idx + delta + GALLERY.length) % GALLERY.length;
+  renderLightbox();
+}
+function renderLightbox() {
+  const g = GALLERY[lbState.idx];
+  if (!g) return;
+  const img = document.getElementById('lightbox-img');
+  const title = document.getElementById('lightbox-title');
+  const extract = document.getElementById('lightbox-extract');
+  if (img) img.src = g._wikiSummary?.thumbnail || `https://picsum.photos/seed/${g.seed}/1200/1200`;
+  if (img) img.alt = g.label;
+  if (title) title.textContent = `${g.label} · Den ${g.day}`;
+  if (extract) {
+    extract.innerHTML = 'Načítám…';
+    wikiSummary(g.wiki).then(sum => {
+      if (lbState.idx !== GALLERY.indexOf(g) || !lbState.open) return;
+      if (sum && sum.extract) {
+        const text = sum.extract.length > 400 ? sum.extract.slice(0, 400) + '…' : sum.extract;
+        extract.innerHTML = `${text} <a href="${sum.url}" target="_blank" rel="noopener">Wikipedia →</a>`;
+      } else {
+        extract.textContent = '';
+      }
+    });
+  }
+}
+function initLightbox() {
+  const grid = document.getElementById('gallery-grid');
+  const lb = document.getElementById('lightbox');
+  if (!grid || !lb) return;
+  grid.addEventListener('click', e => {
+    const item = e.target.closest('.gallery-item');
+    if (!item) return;
+    openLightbox(parseInt(item.getAttribute('data-idx'), 10));
+  });
+  lb.addEventListener('click', e => {
+    if (e.target === lb || e.target.classList.contains('lightbox-close')) closeLightbox();
+    else if (e.target.classList.contains('lightbox-prev')) navLightbox(-1);
+    else if (e.target.classList.contains('lightbox-next')) navLightbox(1);
+  });
+  document.addEventListener('keydown', e => {
+    if (!lbState.open) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') navLightbox(-1);
+    else if (e.key === 'ArrowRight') navLightbox(1);
+  });
 }
 
 // ── HAVERSINE ────────────────────────────────────────────────────
@@ -2007,8 +2810,11 @@ function initAll() {
   initHamburger();
   initAttractionsMap();
   initHotelMap();
+  initMeetingMap();
+  initNearby();
   loadWeather();
   renderGallery();
+  initLightbox();
   initChecklist();
   renderPhrases();
   renderQR();
