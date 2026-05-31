@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Naše fotky — Berlín 2026 · Tým Trampolín</title>
+  <meta name="description" content="Sdílený foto stream účastníků výletu. Postni svou fotku každou celou hodinu — jen jednu minutu otevřeno. Vytvořil Tým Trampolín."/>
+  <meta name="theme-color" content="#0f1117"/>
+  <meta name="color-scheme" content="dark"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:title" content="Naše fotky — Berlín 2026 · Tým Trampolín"/>
+  <meta property="og:description" content="Sdílený foto stream účastníků — postni každou celou hodinu, jen 1 minuta otevřeno."/>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%230f1117'/><text x='32' y='42' font-family='system-ui,sans-serif' font-size='28' font-weight='800' fill='%23f5d020' text-anchor='middle'>B26</text></svg>"/>
+  <style>
+    :root {
+      --bg:      #0f1117;
+      --surface: #1a1d26;
+      --border:  #2a2d3a;
+      --gold:    #f5d020;
+      --gold-dk: #c4a800;
+      --text:    #e8eaf0;
+      --muted:   #8b8fa8;
+      --green:   #22c55e;
+      --red:     #ef4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.5; min-height: 100vh;
+    }
+    a { color: var(--gold); }
+
+    /* ── TOP BAR ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 52px;
+      background: rgba(15,17,23,.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 1rem;
+    }
+    .nav-back {
+      color: var(--muted); text-decoration: none; font-size: .9rem;
+      display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .nav-back:hover { color: var(--text); }
+    .nav-title { font-weight: 700; color: var(--gold); font-size: 1rem; }
+    .nav-icon { color: var(--muted); cursor: pointer; padding: .4rem; }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 720px; margin: 0 auto;
+      padding: 1rem;
+    }
+
+    /* ── WINDOW BANNER ── */
+    .window-banner {
+      border-radius: 14px; padding: 1.25rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      transition: background .3s, border-color .3s;
+    }
+    .window-banner.closed {
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .window-banner.open {
+      background: rgba(34,197,94,.12);
+      border: 2px solid var(--green);
+      animation: pulseOpen 1.5s ease-in-out infinite;
+    }
+    .window-banner.grace {
+      background: rgba(245,208,32,.12);
+      border: 2px solid var(--gold);
+    }
+    @keyframes pulseOpen {
+      0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+      50%      { box-shadow: 0 0 0 12px rgba(34,197,94,0); }
+    }
+    .window-label {
+      font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
+      color: var(--muted); margin-bottom: .5rem;
+    }
+    .window-banner.open .window-label { color: var(--green); font-weight: 600; }
+    .window-banner.grace .window-label { color: var(--gold); font-weight: 600; }
+    .window-time {
+      font-size: 2.5rem; font-weight: 800;
+      color: var(--text); line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    .window-banner.open .window-time { color: var(--green); }
+    .window-banner.grace .window-time { color: var(--gold); }
+    .window-sub { font-size: .85rem; color: var(--muted); margin-top: .5rem; }
+
+    /* ── UPLOAD FORM ── */
+    .upload-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.25rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .upload-card.active { display: block; }
+    .upload-card.disabled { opacity: .55; pointer-events: none; }
+    .upload-row { display: flex; flex-direction: column; gap: .5rem; margin-bottom: .75rem; }
+    .upload-label { font-size: .78rem; color: var(--muted); font-weight: 600; }
+    .upload-input, .upload-textarea {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: .6rem .8rem; color: var(--text);
+      font-family: inherit; font-size: .92rem;
+    }
+    .upload-input:focus, .upload-textarea:focus {
+      outline: 2px solid var(--gold); outline-offset: -1px; border-color: var(--gold);
+    }
+    .upload-textarea { resize: vertical; min-height: 60px; }
+    .upload-file-wrap {
+      position: relative;
+      display: flex; gap: .5rem; align-items: center;
+    }
+    .upload-file-btn {
+      background: var(--bg); color: var(--text);
+      border: 1px dashed var(--border); border-radius: 8px;
+      padding: .6rem 1rem; cursor: pointer;
+      font-family: inherit; font-size: .88rem;
+    }
+    .upload-file-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .upload-file-name { font-size: .82rem; color: var(--muted); }
+    .upload-preview {
+      max-width: 200px; max-height: 200px; border-radius: 8px;
+      margin-top: .5rem; display: block;
+    }
+    .upload-submit {
+      width: 100%; background: var(--gold); color: #000;
+      border: none; border-radius: 8px;
+      padding: .85rem; font-size: 1rem; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      margin-top: .5rem;
+    }
+    .upload-submit:hover:not(:disabled) { background: var(--gold-dk); }
+    .upload-submit:disabled { opacity: .5; cursor: not-allowed; }
+    .upload-progress {
+      height: 4px; background: var(--border); border-radius: 2px;
+      overflow: hidden; margin-top: .5rem; display: none;
+    }
+    .upload-progress.active { display: block; }
+    .upload-progress-bar {
+      height: 100%; background: var(--gold);
+      width: 0%; transition: width .3s;
+    }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 1.5rem 0 .75rem;
+      flex-wrap: wrap; gap: .5rem;
+    }
+    .toolbar-title { font-size: 1.1rem; font-weight: 700; }
+    .toolbar-count { font-size: .85rem; color: var(--muted); }
+    .toolbar-btn {
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: .5rem .9rem; font-size: .82rem; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      display: inline-flex; align-items: center; gap: .4rem;
+    }
+    .toolbar-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .toolbar-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── FEED ── */
+    .feed-empty {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--muted);
+    }
+    .feed-empty .big { font-size: 1.2rem; color: var(--text); margin-bottom: .5rem; }
+    .feed { display: flex; flex-direction: column; gap: 1rem; }
+    .post-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      animation: slideIn .35s ease-out;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .post-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: .75rem 1rem;
+    }
+    .post-name {
+      font-weight: 700; font-size: .92rem;
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .post-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--gold); color: #000;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: .8rem;
+    }
+    .post-time {
+      font-size: .75rem; color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .post-img-wrap {
+      background: var(--bg); display: flex; justify-content: center;
+      cursor: pointer; min-height: 200px;
+    }
+    .post-img {
+      max-width: 100%; max-height: 600px;
+      display: block;
+    }
+    .post-footer {
+      padding: .65rem 1rem .9rem;
+    }
+    .post-caption {
+      font-size: .9rem; line-height: 1.45;
+      margin-bottom: .5rem; white-space: pre-wrap; word-break: break-word;
+    }
+    .post-actions {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .like-btn {
+      background: transparent; border: none;
+      color: var(--muted); cursor: pointer;
+      display: inline-flex; align-items: center; gap: .4rem;
+      font-family: inherit; font-size: .9rem; font-weight: 600;
+      padding: .2rem .4rem; border-radius: 6px;
+      transition: color .15s, transform .1s;
+    }
+    .like-btn:hover { color: var(--red); }
+    .like-btn:active { transform: scale(.92); }
+    .like-btn.liked { color: var(--red); }
+    .like-btn .heart { font-size: 1.1rem; }
+
+    /* ── TRIP CODE MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,.75); backdrop-filter: blur(6px);
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.5rem;
+      max-width: 360px; width: 100%;
+    }
+    .modal-title { font-weight: 700; font-size: 1.1rem; margin-bottom: .5rem; }
+    .modal-text { color: var(--muted); font-size: .88rem; margin-bottom: 1rem; }
+    .modal-err { color: var(--red); font-size: .82rem; margin-top: .4rem; min-height: 1.2em; }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,.92);
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-img {
+      max-width: 92vw; max-height: 90vh;
+      border-radius: 8px;
+    }
+    .lightbox-close {
+      position: absolute; top: 1rem; right: 1rem;
+      background: rgba(255,255,255,.12); color: #fff;
+      border: 1px solid rgba(255,255,255,.2); border-radius: 50%;
+      width: 40px; height: 40px; font-size: 1.4rem;
+      cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .lightbox-close:hover { background: rgba(255,255,255,.2); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 1.5rem; left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface); color: var(--text);
+      border: 1px solid var(--gold);
+      padding: .65rem 1.2rem; border-radius: 8px;
+      font-size: .9rem; font-weight: 500;
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
+      opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      z-index: 1000;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.err { border-color: var(--red); }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center; padding: 2rem 1rem;
+      color: var(--muted); font-size: .8rem;
+      border-top: 1px solid var(--border); margin-top: 2rem;
+    }
+    footer strong { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-back" href="./">‹ Zpět na hlavní</a>
+  <span class="nav-title">Naše fotky</span>
+  <span style="width:60px"></span>
+</nav>
+
+<div class="container">
+
+  <!-- WINDOW STATE BANNER -->
+  <div class="window-banner closed" id="window-banner">
+    <div class="window-label" id="window-label">Příští okno za</div>
+    <div class="window-time" id="window-time">––:––</div>
+    <div class="window-sub" id="window-sub">Postnout fotku jde každou celou hodinu, vždy 1 minutu</div>
+  </div>
+
+  <!-- UPLOAD FORM -->
+  <div class="upload-card" id="upload-card">
+    <div class="upload-row">
+      <label class="upload-label" for="up-name">Tvoje jméno</label>
+      <input type="text" id="up-name" class="upload-input" maxlength="40" placeholder="např. Hugo" autocomplete="given-name">
+    </div>
+    <div class="upload-row">
+      <label class="upload-label" for="up-caption">Caption (volitelný, max 280 znaků)</label>
+      <textarea id="up-caption" class="upload-textarea" maxlength="280" placeholder="Co se právě děje?"></textarea>
+    </div>
+    <div class="upload-row">
+      <label class="upload-label">Fotka</label>
+      <div class="upload-file-wrap">
+        <label class="upload-file-btn" for="up-file">Vybrat fotku</label>
+        <span class="upload-file-name" id="up-file-name">Nic nevybráno</span>
+        <input type="file" id="up-file" accept="image/jpeg,image/png,image/webp" capture="environment" style="display:none">
+      </div>
+      <img class="upload-preview" id="up-preview" alt="" style="display:none">
+    </div>
+    <button class="upload-submit" id="up-submit" type="button" disabled>Postnout</button>
+    <div class="upload-progress" id="up-progress"><div class="upload-progress-bar" id="up-progress-bar"></div></div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div>
+      <div class="toolbar-title">Stream</div>
+      <div class="toolbar-count" id="feed-count">0 fotek</div>
+    </div>
+    <button class="toolbar-btn" id="zip-btn" type="button" title="Stáhnout všechny fotky jako ZIP">⬇ ZIP</button>
+  </div>
+
+  <!-- FEED -->
+  <div class="feed-empty" id="feed-empty">
+    <div class="big">Ještě nic.</div>
+    <div>Čekáme na první fotku — postnout půjde příští celou hodinu.</div>
+  </div>
+  <div class="feed" id="feed"></div>
+
+</div>
+
+<footer>
+  Web vytvořil <strong>Tým Trampolín</strong> · Berlín 2026<br>
+  <a href="./" style="color:var(--muted); font-size:.75rem">Zpět na hlavní stránku</a>
+</footer>
+
+<!-- TRIP CODE MODAL -->
+<div class="modal-overlay" id="trip-modal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-title">Trip code</div>
+    <div class="modal-text">Pro postnutí fotky zadej trip code, který ti dal vedoucí. Bez kódu můžeš jen prohlížet a lajkovat.</div>
+    <input type="text" id="trip-input" class="upload-input" placeholder="trip code" autocomplete="off">
+    <div class="modal-err" id="trip-err"></div>
+    <div style="display:flex; gap:.5rem; margin-top:.75rem">
+      <button class="toolbar-btn" type="button" style="flex:1" id="trip-skip">Jen prohlížet</button>
+      <button class="upload-submit" type="button" style="flex:1; margin:0" id="trip-submit">Potvrdit</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lightbox-close" id="lb-close" type="button" aria-label="Zavřít">×</button>
+  <img class="lightbox-img" id="lb-img" alt="">
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// ── CONFIG ────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://oxdikigirebssuraiufd.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_tEa8paE-pq5De9JHj0VkqA_9mfSB6Uk';
+const BUCKET = 'posts';
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false },
+  realtime: { params: { eventsPerSecond: 10 } },
+});
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function $(id) { return document.getElementById(id); }
+function uuid() {
+  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c/4).toString(16));
+}
+function toast(msg, isErr=false, ms=2500) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.toggle('err', isErr);
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('show'), ms);
+}
+function timeAgo(iso) {
+  const sec = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (sec < 60) return `před ${sec}s`;
+  if (sec < 3600) return `před ${Math.floor(sec/60)}m`;
+  if (sec < 86400) return `před ${Math.floor(sec/3600)}h`;
+  return new Date(iso).toLocaleString('cs-CZ', { day:'numeric', month:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function escapeHtml(s) {
+  return (s || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+}
+
+// ── LOCAL STATE ───────────────────────────────────────────────────
+const LS = {
+  uuid: () => {
+    let v = localStorage.getItem('berlin2026_uuid');
+    if (!v) { v = uuid(); localStorage.setItem('berlin2026_uuid', v); }
+    return v;
+  },
+  name: { get: () => localStorage.getItem('berlin2026_name') || '',
+          set: v => localStorage.setItem('berlin2026_name', v) },
+  tripOk: { get: () => localStorage.getItem('berlin2026_trip_ok') === '1',
+            set: v => v ? localStorage.setItem('berlin2026_trip_ok','1') : localStorage.removeItem('berlin2026_trip_ok') },
+  liked: {
+    has: id => JSON.parse(localStorage.getItem('berlin2026_likes') || '{}')[id] === true,
+    set: (id, v) => {
+      const m = JSON.parse(localStorage.getItem('berlin2026_likes') || '{}');
+      if (v) m[id] = true; else delete m[id];
+      localStorage.setItem('berlin2026_likes', JSON.stringify(m));
+    }
+  }
+};
+const MY_UUID = LS.uuid();
+
+// ── WINDOW STATE ──────────────────────────────────────────────────
+function windowState() {
+  const now = new Date();
+  const min = now.getMinutes();
+  const sec = now.getSeconds();
+  if (min === 0) return { phase: 'open',  secLeft: 59 - sec, secToNext: 0 };
+  if (min === 1) return { phase: 'grace', secLeft: 59 - sec, secToNext: 0 };
+  // closed: countdown to next HH:00
+  const secToNext = (59 - min) * 60 + (60 - sec);
+  return { phase: 'closed', secLeft: 0, secToNext };
+}
+function fmtSec(s) {
+  if (s >= 3600) {
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+    return `${h}h ${m}m`;
+  }
+  if (s >= 60) {
+    const m = Math.floor(s/60), ss = s % 60;
+    return `${m}m ${String(ss).padStart(2,'0')}s`;
+  }
+  return `${s}s`;
+}
+function updateWindow() {
+  const st = windowState();
+  const banner = $('window-banner');
+  const lbl = $('window-label');
+  const time = $('window-time');
+  const sub = $('window-sub');
+  const card = $('upload-card');
+
+  banner.classList.remove('open','grace','closed');
+  if (st.phase === 'open') {
+    banner.classList.add('open');
+    lbl.textContent = 'OTEVŘENO — postni teď!';
+    time.textContent = fmtSec(st.secLeft);
+    sub.textContent = 'Stihni nahrát fotku než se okno zavře';
+    card.classList.add('active');
+    if (LS.tripOk()) card.classList.remove('disabled');
+    else card.classList.add('disabled');
+    setUploadEnabled(true);
+  } else if (st.phase === 'grace') {
+    banner.classList.add('grace');
+    lbl.textContent = 'Zavírá se — dokončuji uploady';
+    time.textContent = fmtSec(st.secLeft);
+    sub.textContent = 'Nové uploady ještě projdou, ale spěchej!';
+    card.classList.add('active', 'disabled');
+    setUploadEnabled(false);
+  } else {
+    banner.classList.add('closed');
+    lbl.textContent = 'Příští okno za';
+    time.textContent = fmtSec(st.secToNext);
+    const nextH = (new Date().getHours() + 1) % 24;
+    sub.textContent = `Otevře se v ${String(nextH).padStart(2,'0')}:00 — vždy 1 minutu`;
+    card.classList.remove('active');
+    setUploadEnabled(false);
+  }
+}
+
+// ── IMAGE RESIZE ──────────────────────────────────────────────────
+async function resizeImage(file, maxSize=1600, quality=0.85) {
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = reject;
+    i.src = URL.createObjectURL(file);
+  });
+  let { width: w, height: h } = img;
+  if (w > maxSize || h > maxSize) {
+    if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+    else       { w = Math.round(w * maxSize / h); h = maxSize; }
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+  URL.revokeObjectURL(img.src);
+  return new Promise(resolve => canvas.toBlob(b => resolve(b), 'image/jpeg', quality));
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────────
+let pendingFile = null;
+let pendingPreviewUrl = null;
+
+function setUploadEnabled(enabled) {
+  const btn = $('up-submit');
+  btn.disabled = !enabled || !pendingFile || !$('up-name').value.trim() || !LS.tripOk();
+}
+
+$('up-file').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  pendingFile = f;
+  $('up-file-name').textContent = `${f.name} (${(f.size/1024/1024).toFixed(1)} MB)`;
+  if (pendingPreviewUrl) URL.revokeObjectURL(pendingPreviewUrl);
+  pendingPreviewUrl = URL.createObjectURL(f);
+  const prev = $('up-preview');
+  prev.src = pendingPreviewUrl;
+  prev.style.display = 'block';
+  setUploadEnabled(windowState().phase === 'open');
+});
+
+$('up-name').addEventListener('input', e => {
+  LS.name.set(e.target.value);
+  setUploadEnabled(windowState().phase === 'open');
+});
+
+$('up-submit').addEventListener('click', async () => {
+  const name = $('up-name').value.trim();
+  const caption = $('up-caption').value.trim();
+  const file = pendingFile;
+  if (!name || !file) return;
+  if (!LS.tripOk()) { toast('Bez trip code postnout nejde', true); return; }
+
+  $('up-submit').disabled = true;
+  $('up-submit').textContent = 'Zmenšuji…';
+  $('up-progress').classList.add('active');
+  $('up-progress-bar').style.width = '15%';
+
+  try {
+    const resized = await resizeImage(file, 1600, 0.85);
+    $('up-submit').textContent = 'Nahrávám…';
+    $('up-progress-bar').style.width = '50%';
+
+    const fileName = `${Date.now()}-${uuid()}.jpg`;
+    const path = `${fileName}`;
+
+    const { error: upErr } = await supabase.storage
+      .from(BUCKET).upload(path, resized, { contentType: 'image/jpeg', upsert: false });
+    if (upErr) throw upErr;
+
+    $('up-progress-bar').style.width = '80%';
+    $('up-submit').textContent = 'Ukládám…';
+
+    const { error: insErr } = await supabase.from('posts').insert({
+      name, caption: caption || null, image_path: path, user_uuid: MY_UUID,
+    });
+    if (insErr) {
+      // cleanup file
+      await supabase.storage.from(BUCKET).remove([path]);
+      throw insErr;
+    }
+
+    $('up-progress-bar').style.width = '100%';
+    toast('Postnuto! 🎉');
+    // reset form
+    pendingFile = null;
+    if (pendingPreviewUrl) { URL.revokeObjectURL(pendingPreviewUrl); pendingPreviewUrl = null; }
+    $('up-file').value = '';
+    $('up-file-name').textContent = 'Nic nevybráno';
+    $('up-preview').style.display = 'none';
+    $('up-caption').value = '';
+  } catch (e) {
+    console.error(e);
+    const msg = (e.message || '').includes('row-level security')
+      ? 'Okno se zavřelo — zkus příští hodinu'
+      : `Chyba: ${e.message || 'unknown'}`;
+    toast(msg, true, 4000);
+  } finally {
+    setTimeout(() => {
+      $('up-progress').classList.remove('active');
+      $('up-progress-bar').style.width = '0%';
+      $('up-submit').textContent = 'Postnout';
+      setUploadEnabled(windowState().phase === 'open');
+    }, 800);
+  }
+});
+
+// ── FEED ──────────────────────────────────────────────────────────
+const posts = new Map(); // id → post
+const reactionsCount = new Map(); // post_id → count
+
+function imageUrl(path) {
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+function avatarLetter(name) {
+  return (name || '?').trim().charAt(0).toUpperCase();
+}
+
+function postCardHtml(p) {
+  const count = reactionsCount.get(p.id) || 0;
+  const liked = LS.liked.has(p.id);
+  return `
+    <article class="post-card" data-id="${p.id}">
+      <header class="post-header">
+        <div class="post-name">
+          <span class="post-avatar">${escapeHtml(avatarLetter(p.name))}</span>
+          <span>${escapeHtml(p.name)}</span>
+        </div>
+        <span class="post-time" data-time="${p.created_at}">${timeAgo(p.created_at)}</span>
+      </header>
+      <div class="post-img-wrap" data-img="${escapeHtml(imageUrl(p.image_path))}">
+        <img class="post-img" src="${escapeHtml(imageUrl(p.image_path))}" alt="${escapeHtml(p.caption || p.name)}" loading="lazy">
+      </div>
+      <div class="post-footer">
+        ${p.caption ? `<div class="post-caption">${escapeHtml(p.caption)}</div>` : ''}
+        <div class="post-actions">
+          <button class="like-btn ${liked ? 'liked' : ''}" data-like="${p.id}" type="button">
+            <span class="heart">${liked ? '❤' : '♡'}</span>
+            <span data-like-count="${p.id}">${count}</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderFeed() {
+  const arr = Array.from(posts.values()).sort((a,b) =>
+    new Date(b.created_at) - new Date(a.created_at));
+  const feed = $('feed');
+  const empty = $('feed-empty');
+  $('feed-count').textContent = `${arr.length} ${arr.length === 1 ? 'fotka' : arr.length < 5 ? 'fotky' : 'fotek'}`;
+  if (arr.length === 0) {
+    feed.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    feed.innerHTML = arr.map(postCardHtml).join('');
+  }
+}
+
+function upsertPost(p) {
+  const isNew = !posts.has(p.id);
+  posts.set(p.id, p);
+  if (isNew) renderFeed();
+}
+
+async function loadInitialFeed() {
+  const { data, error } = await supabase
+    .from('posts')
+    .select('id, name, caption, image_path, user_uuid, created_at')
+    .order('created_at', { ascending: false })
+    .limit(100);
+  if (error) { console.error(error); toast('Nelze načíst feed', true); return; }
+  data.forEach(p => posts.set(p.id, p));
+  await loadReactionCounts();
+  renderFeed();
+}
+
+async function loadReactionCounts() {
+  const { data, error } = await supabase
+    .from('reactions')
+    .select('post_id');
+  if (error || !data) return;
+  reactionsCount.clear();
+  data.forEach(r => reactionsCount.set(r.post_id, (reactionsCount.get(r.post_id) || 0) + 1));
+}
+
+function updateReactionInDom(postId) {
+  const count = reactionsCount.get(postId) || 0;
+  const cntEl = document.querySelector(`[data-like-count="${postId}"]`);
+  if (cntEl) cntEl.textContent = count;
+  const btn = document.querySelector(`[data-like="${postId}"]`);
+  if (btn) {
+    const liked = LS.liked.has(postId);
+    btn.classList.toggle('liked', liked);
+    btn.querySelector('.heart').textContent = liked ? '❤' : '♡';
+  }
+}
+
+// ── EVENT DELEGATION (likes + lightbox) ──────────────────────────
+$('feed').addEventListener('click', async e => {
+  const likeBtn = e.target.closest('[data-like]');
+  if (likeBtn) {
+    const postId = likeBtn.getAttribute('data-like');
+    const wasLiked = LS.liked.has(postId);
+    // Optimistic update
+    LS.liked.set(postId, !wasLiked);
+    reactionsCount.set(postId, Math.max(0, (reactionsCount.get(postId) || 0) + (wasLiked ? -1 : 1)));
+    updateReactionInDom(postId);
+    try {
+      if (wasLiked) {
+        await supabase.from('reactions').delete()
+          .eq('post_id', postId).eq('user_uuid', MY_UUID).eq('type', 'like');
+      } else {
+        await supabase.from('reactions').insert({
+          post_id: postId, user_uuid: MY_UUID, type: 'like',
+        });
+      }
+    } catch (e) {
+      // Revert on failure
+      LS.liked.set(postId, wasLiked);
+      reactionsCount.set(postId, Math.max(0, (reactionsCount.get(postId) || 0) + (wasLiked ? 1 : -1)));
+      updateReactionInDom(postId);
+    }
+    return;
+  }
+  const imgWrap = e.target.closest('[data-img]');
+  if (imgWrap) {
+    $('lb-img').src = imgWrap.getAttribute('data-img');
+    $('lightbox').classList.add('open');
+  }
+});
+
+$('lb-close').addEventListener('click', () => $('lightbox').classList.remove('open'));
+$('lightbox').addEventListener('click', e => {
+  if (e.target === $('lightbox')) $('lightbox').classList.remove('open');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') $('lightbox').classList.remove('open');
+});
+
+// ── REALTIME ──────────────────────────────────────────────────────
+function subscribeRealtime() {
+  supabase.channel('posts-feed')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'posts' },
+      payload => upsertPost(payload.new))
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reactions' },
+      payload => {
+        const id = payload.new.post_id;
+        reactionsCount.set(id, (reactionsCount.get(id) || 0) + 1);
+        updateReactionInDom(id);
+      })
+    .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'reactions' },
+      payload => {
+        const id = payload.old.post_id;
+        reactionsCount.set(id, Math.max(0, (reactionsCount.get(id) || 0) - 1));
+        updateReactionInDom(id);
+      })
+    .subscribe();
+}
+
+// ── TRIP CODE ─────────────────────────────────────────────────────
+async function getTripCode() {
+  const { data } = await supabase.from('config').select('value').eq('key', 'trip_code').single();
+  return data?.value || 'berlin2026';
+}
+function showTripModal() {
+  $('trip-modal').classList.add('open');
+  $('trip-input').focus();
+}
+function hideTripModal() {
+  $('trip-modal').classList.remove('open');
+}
+$('trip-submit').addEventListener('click', async () => {
+  const input = $('trip-input').value.trim().toLowerCase();
+  const real = (await getTripCode()).trim().toLowerCase();
+  if (input === real) {
+    LS.tripOk.set(true);
+    hideTripModal();
+    toast('Trip code OK! Můžeš postnout');
+    updateWindow();
+  } else {
+    $('trip-err').textContent = 'Špatný kód, zkus znovu.';
+  }
+});
+$('trip-skip').addEventListener('click', () => hideTripModal());
+$('trip-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') $('trip-submit').click();
+});
+
+// ── ZIP DOWNLOAD ──────────────────────────────────────────────────
+$('zip-btn').addEventListener('click', async () => {
+  const btn = $('zip-btn');
+  if (posts.size === 0) { toast('Nic ke stažení', true); return; }
+  btn.disabled = true;
+  btn.textContent = 'Načítám JSZip…';
+  try {
+    if (!window.JSZip) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+        s.onload = resolve; s.onerror = reject;
+        document.head.appendChild(s);
+      });
+    }
+    const zip = new window.JSZip();
+    const arr = Array.from(posts.values()).sort((a,b) =>
+      new Date(a.created_at) - new Date(b.created_at));
+    let done = 0;
+    for (const p of arr) {
+      btn.textContent = `Stahuji ${++done}/${arr.length}…`;
+      const r = await fetch(imageUrl(p.image_path));
+      const blob = await r.blob();
+      const ts = new Date(p.created_at).toISOString().replace(/[:.]/g, '-').slice(0, 19);
+      const safeName = p.name.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 20);
+      zip.file(`${ts}_${safeName}_${p.id.slice(0,8)}.jpg`, blob);
+    }
+    btn.textContent = 'Balím ZIP…';
+    const content = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(content);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `berlin2026-fotky-${new Date().toISOString().slice(0,10)}.zip`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast(`Staženo ${arr.length} fotek`);
+  } catch (e) {
+    console.error(e);
+    toast('Chyba při stahování', true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇ ZIP';
+  }
+});
+
+// ── TIME-AGO REFRESHER ────────────────────────────────────────────
+setInterval(() => {
+  document.querySelectorAll('[data-time]').forEach(el => {
+    el.textContent = timeAgo(el.getAttribute('data-time'));
+  });
+}, 30000);
+
+// ── INIT ──────────────────────────────────────────────────────────
+function init() {
+  $('up-name').value = LS.name.get();
+  updateWindow();
+  setInterval(updateWindow, 1000);
+  loadInitialFeed();
+  subscribeRealtime();
+  if (!LS.tripOk()) {
+    setTimeout(showTripModal, 400);
+  }
+  // Register SW from same scope
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+}
+init();
+</script>
+
+</body>
+</html>
